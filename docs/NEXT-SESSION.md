@@ -1,11 +1,11 @@
 # 다음 세션 프롬프트 (2026-11-18 작성)
 
-아래 "붙여 넣을 프롬프트"를 `D:\github-copilot-zone` 에서 연 Claude Code 세션에 그대로 붙여 넣으세요.
+아래 "붙여 넣을 프롬프트"를 이 저장소를 연 Claude Code 세션에 그대로 붙여 넣으세요. 다른 PC(노트북 등)에서는 먼저 클론(이미 있으면 git pull)하고 npm install 을 한 뒤 시작합니다.
 
 ## 붙여 넣을 프롬프트
 
 ```
-D:\github-copilot-zone 는 "GitHub Copilot 체험 존" 프로젝트야 (원격: https://github.com/shchocho/github-copilot-zone, 브랜치 main).
+이 저장소는 "GitHub Copilot 체험 존" 프로젝트야 (원격: https://github.com/shchocho/github-copilot-zone, 브랜치 main).
 공용 Copilot 체험 사이트(shchocho/2609, 브랜치 claude/busy-wright-7wa9ee)의 시나리오 플레이어 엔진을 복사해서,
 VS Code 안의 GitHub Copilot 을 실제 UI와 거의 똑같이 눌러 보는 시연 사이트를 만드는 중이야.
 먼저 docs/NEXT-SESSION.md(이 파일), docs/UI-SOURCES.md, README.md 를 읽고 시작해.

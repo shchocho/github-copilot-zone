@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/styles/vscode.css"
+        ],
+        "createdAt": "2026-11-17T15:22:20.618Z",
+        "reason": "Claude: lines 138/141 reproduce VS Code's diff gutter decoration (green/red bar beside added/removed lines) in a product-UI replica; not a card accent"
+      }
+    ]
+  }
+}
