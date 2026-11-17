@@ -38,6 +38,8 @@ export const AGENTS = {
   studio: { name: '에이전트', full: 'Copilot Studio' },
   code: { name: 'Copilot', full: 'Copilot Code' },
   teams: { name: 'Teams', full: 'Microsoft Teams' },
+  vscode: { name: 'GitHub Copilot', full: 'VS Code의 GitHub Copilot' },
+  github: { name: 'GitHub Copilot', full: 'GitHub의 Copilot 코딩 에이전트' },
 } as const;
 
 export const APPS = {
@@ -86,9 +88,11 @@ const SURFACE_LOGO: Record<string, string> = {
   studio: 'logo/copilot/copilot-studio.svg',
   cloudflow: 'logo/copilot/power-automate.svg',
   deskflow: 'logo/copilot/power-automate.svg',
+  vscode: 'logo/ghcp/vscode.svg',
+  github: 'logo/ghcp/github.svg',
 };
 /** 목록 카드 왼쪽 위의 제품 로고 한 개. Chat·Cowork·Code 는 전용 공식 아이콘이 없어 Copilot 로고를 쓴다 */
-export const cardLogo = (s: Scenario) => SURFACE_LOGO[s.surface ?? ''] ?? 'logo/copilot/copilot.png';
+export const cardLogo = (s: Scenario) => SURFACE_LOGO[s.surface ?? ''] ?? SURFACE_LOGO[s.agent] ?? 'logo/ghcp/copilot.svg';
 export function madeAppOf(s: Scenario): AppId | undefined {
   for (const a of Object.values(s.workbench?.artifacts ?? {})) if (a.origin === 'made' && isApp(a.app)) return a.app;
   return undefined;

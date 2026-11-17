@@ -7,7 +7,7 @@ import { COPY } from '../copy';
 const GROUPS = [
   { title: COPY.groupWork, tracks: TRACKS.filter(t => !t.group) },
   { title: COPY.groupProduct, tracks: TRACKS.filter(t => t.group === 'product') },
-];
+].filter(g => g.tracks.length > 0);
 
 /** 홈(#/start) — 업무 영역 · 제품 기능 체험(트랙) 선택 */
 export function Home() {
@@ -28,8 +28,8 @@ export function Home() {
           <h1 className="booth-home-title">
             <span className="booth-home-title-line">
               <span className="booth-home-title-product">
-                <span className="booth-home-lockup">
-                  <img src="logo/copilot/copilot-lockup-horiz.png" alt="Microsoft Copilot" />
+                <span className="booth-home-lockup ghcp-lockup">
+                  <img src="logo/ghcp/copilot.svg" alt="" /><b>GitHub Copilot</b>
                 </span>
                 <span>{COPY.particle}</span>
               </span>

@@ -23,14 +23,17 @@ function toolCategory(t: string) {
 export interface Clip { name: string; app: string; link?: boolean }
 
 /** 대화 메시지 하나 (cue/spot/approve/choice/hunt 는 별도 UI로 처리하므로 그리지 않음) */
-export function MessageView({ m, active, ids, extra, hold = false, clips, pick, acts = '', toolIco = 'logo/copilot/copilot.png' }: {
+export function MessageView({ m, active, ids, extra, hold = false, clips, pick, acts = '', toolIco = 'logo/copilot/copilot.png', toolView }: {
   m: Message; active?: boolean; ids?: string[]; extra?: ReactNode; hold?: boolean; clips?: Clip[]; pick?: Pick; acts?: string;
   /** 작업 단계 카드의 아이콘. Copilot 없이 사람이 조작하는 화면(Power Automate 흐름)은 그 제품 로고를 쓴다 */
   toolIco?: string;
+  /** 작업 단계를 다른 모양으로 그릴 때 (VS Code 채팅의 도구 실행 줄) */
+  toolView?: (text: string, active: boolean) => ReactNode;
 }) {
   if (m.role === 'cue' || m.role === 'spot' || m.role === 'approve' || m.role === 'choice' || m.role === 'hunt') return null;
   if (ids && m.only && !m.only.some(id => ids.includes(id))) return null;
-  if (m.role === 'note') return <p className="sc-note">{m.text}</p>;
+  if (m.role === 'note') return <p className="sc-note"><Bold text={m.text} /></p>;
+  if (m.role === 'tool' && toolView) return <>{toolView(m.tool, !!active)}</>;
   if (m.role === 'tool') {
     return (
       <div className={`sc-act${active ? ' is-now' : ' is-done'}`}>

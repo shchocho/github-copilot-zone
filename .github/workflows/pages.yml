@@ -5,7 +5,7 @@ name: GitHub Pages 배포
 
 on:
   push:
-    branches: [claude/busy-wright-7wa9ee]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

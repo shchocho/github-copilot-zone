@@ -1,6 +1,6 @@
 /** 시나리오 JSON 스키마 (src/scenarios/<track>/<id>.scenario.json) */
 
-export type AgentKind = 'chat' | 'cowork' | 'scout' | 'office' | 'flow' | 'studio' | 'code' | 'teams';
+export type AgentKind = 'chat' | 'cowork' | 'scout' | 'office' | 'flow' | 'studio' | 'code' | 'teams' | 'vscode' | 'github';
 export type AppKind = 'excel' | 'word' | 'powerpoint' | 'outlook' | 'teams' | 'onenote';
 
 /** only: 고른 선택지 id(또는 "hunted") 중 하나라도 있을 때만 / not: 하나라도 있으면 숨김 */
@@ -96,9 +96,101 @@ export interface TeamsPost {
   foot?: string;
   reactions?: string[];
 }
+/* ---------- VS Code (GitHub Copilot) ---------- */
+/**
+ * 편집기의 한 줄. 문구는 깃발(tool 메시지의 sets)과 only/not 으로 단계마다 바뀐다.
+ * g: 커서 뒤의 회색 제안(고스트 텍스트). ga 깃발이 켜지면 일반 코드로 바뀐다(Tab 으로 수락한 상태)
+ * diff: 에이전트 · 인라인 채팅이 고친 줄. 파일의 kept 깃발이 켜지면(유지) 표시가 사라지고, del 줄은 없어진다
+ * nes: 다음 편집 제안 — from 을 to 로 바꾸자는 제안. flag 가 켜지면 바뀐 줄이 된다
+ */
+export interface CodeLine extends Filterable {
+  t: string;
+  g?: string;
+  ga?: string;
+  diff?: 'add' | 'del';
+  nes?: { from: string; to: string; flag: string };
+  /** 커서가 있는 줄 */
+  cursor?: boolean;
+}
+/** 인라인 채팅(Ctrl+I) 상자: on 깃발이 켜지면 at 번째 줄 위에 열리고, done 깃발이 켜지면 닫힌다 */
+export interface InlineChat { at: number; text: string; on: string; done?: string }
+export interface CodeFile {
+  path: string;
+  lines: CodeLine[];
+  inline?: InlineChat;
+  /** 이 깃발이 켜지면 고친 줄(diff)을 받아들인 상태 */
+  kept?: string;
+  /** 탐색기 · 탭의 수정 표시(M · A)를 켜는 깃발 */
+  touched?: string;
+  added?: boolean;
+}
+export interface TermLine extends Filterable { t: string; tone?: 'cmd' | 'ok' | 'err' | 'dim' | 'warn' }
+/** VS Code 화면 설정 (시나리오의 vscode) */
+export interface VsCodeSetup {
+  repo: string;
+  branch: string;
+  /** 탐색기에 보일 파일 경로 (폴더는 경로에서 만든다) */
+  tree: string[];
+  /** 오른쪽 채팅 보기를 열어 둘지 (코드 완성 · 인라인 채팅 시나리오는 닫아 둠) */
+  chat?: boolean;
+  /** 채팅 입력란의 에이전트 선택 (Agent · Ask · Plan) */
+  agent?: string;
+  /** 왼쪽 보기: 탐색기 또는 소스 제어 */
+  view?: 'explorer' | 'scm';
+  /** 채팅 입력란 위 작업 집합(변경된 파일). on 이 켜지면 보이고 kept 가 켜지면 사라진다 */
+  edits?: { files: string[]; on: string; kept: string; added?: number; removed?: number };
+  /** 소스 제어 보기: 변경 파일 · 커밋 메시지(msg, on 깃발이 켜지면 채워짐) · 커밋(done 깃발) */
+  scm?: { changes: { path: string; st: 'M' | 'A' | 'D' }[]; msg: string; on: string; done?: string };
+  /** 채팅 입력란에 붙어 있는 컨텍스트(파일 이름) */
+  context?: string[];
+}
+/* ---------- GitHub.com ---------- */
+export interface GhEvent extends Filterable {
+  kind: 'comment' | 'event' | 'commit' | 'review' | 'pr-link' | 'check';
+  who: string;
+  /** 'copilot' 이면 Copilot 아이콘 */
+  bot?: boolean;
+  text: string;
+  at?: string;
+  body?: string[];
+  /** 리뷰 코멘트: 파일 · 줄 · 중요도 · 제안 코드 */
+  file?: string;
+  line?: string;
+  severity?: 'High' | 'Medium' | 'Low';
+  suggestion?: { del: string[]; add: string[] };
+  /** 리뷰 코멘트 아래 단추 (cue.target 과 같은 id 면 누를 수 있다) */
+  act?: { id: string; label: string };
+}
+export interface GhPage {
+  type: 'issue' | 'pr';
+  repo: string;
+  number: number;
+  title: string;
+  state: 'open' | 'merged' | 'draft';
+  /** state 를 바꾸는 깃발 → 새 상태 */
+  stateBy?: Record<string, 'open' | 'merged' | 'draft'>;
+  author: string;
+  body: string[];
+  head?: string;
+  base?: string;
+  assignees?: { who: string; bot?: boolean; only?: string[]; not?: string[] }[];
+  reviewers?: { who: string; bot?: boolean; state?: string; only?: string[]; not?: string[] }[];
+  labels?: string[];
+  events: GhEvent[];
+  /** 오른쪽 사이드바의 누를 수 있는 곳: assign(담당자 지정) · review(리뷰 요청) */
+  checks?: { name: string; state: 'ok' | 'fail' | 'run'; only?: string[]; not?: string[] }[];
+  files?: number;
+  /** "Assign to Copilot" 창: on 깃발이 켜지면 열리고 done 깃발이 켜지면 닫힌다 */
+  dialog?: { on: string; done: string; prompt: string; base?: string; agent?: string; model?: string };
+  /** 오른쪽 Copilot 패널 제목 (세션 로그) */
+  panel?: string;
+}
 export interface Artifact {
   app: string;
-  kind: 'sheet' | 'doc' | 'deck' | 'mail' | 'teams' | 'flow' | string;
+  kind: 'sheet' | 'doc' | 'deck' | 'mail' | 'teams' | 'flow' | 'code' | 'term' | 'gh' | string;
+  code?: CodeFile;
+  term?: { title?: string; lines: TermLine[] };
+  gh?: GhPage;
   origin: 'read' | 'made';
   share?: string;
   name: string;
@@ -216,6 +308,8 @@ export interface Scenario {
   overview?: OverviewStep[];
   workbench?: Workbench;
   teams?: TeamsLab;
+  /** agent 'vscode' 의 화면 설정 */
+  vscode?: VsCodeSetup;
   messages: Message[];
   recap?: RecapItem[];
   quiz?: QuizItem[];

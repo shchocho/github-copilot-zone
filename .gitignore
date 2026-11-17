@@ -7,3 +7,4 @@ dist-local
 release
 e2e-out
 dist-pages
+scripts/ui-labels/ref

@@ -1,5 +1,7 @@
 /** 작업 결과물 뷰어: Excel 시트 · Word 문서 · Outlook 메일 · PowerPoint 덱 · Teams 게시물 */
 import { useState, type ReactNode } from 'react';
+import { CodeArtifact } from '../surfaces/vscode/VsCode';
+import { GhArtifact } from '../surfaces/github/GitHubWeb';
 import type { Artifact, Chart, Deck, DocBlock, FlowAct, FlowScreen, Sheet, Vars } from '../types';
 import { Blanks, Bold, filterBy, fill, flowBeats, artifactName } from '../engine/text';
 import { AppIcon, FT, WE, X } from './ui';
@@ -445,6 +447,8 @@ export function ArtifactView(p: ViewProps) {
   if (a.kind === 'deck') return <DeckView {...p} />;
   if (a.kind === 'teams') return <TeamsView {...p} />;
   if (a.kind === 'flow') return <FlowView {...p} />;
+  if (a.kind === 'code' || a.kind === 'term') return <CodeArtifact a={a} ids={p.ids} />;
+  if (a.kind === 'gh') return <GhArtifact a={a} ids={p.ids} />;
   if (a.app === 'studio' || a.app === 'code') return <AgentView {...p} />;
   if (a.kind === 'mail') return <MailView {...p} />;
   return <DocView {...p} />;

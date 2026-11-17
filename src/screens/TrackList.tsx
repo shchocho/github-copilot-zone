@@ -23,10 +23,12 @@ const PRODUCTS: Record<string, { label: string; plain?: boolean; description: Re
   code: { label: 'Code', description: <>개발자가 아니어도 <strong>말로 설명해 앱</strong>을 만들고, 미리보기에서 써 본 뒤 게시합니다.</> },
   studio: { label: 'Studio', description: <>지식·토픽 또는 지침·스킬·도구로 <strong>우리 업무에 맞는 에이전트</strong>를 만들고 게시합니다.</> },
   teamsapp: { label: 'Microsoft Teams', plain: true, description: <>채팅·일정·팀 채널의 <strong>기본 기능을 순서대로 눌러 보며</strong> 익힙니다.</> },
+  vscode: { label: 'VS Code의 GitHub Copilot', plain: true, description: <>편집기 · 채팅 · 터미널이 한 창에 있는 <strong>실제 VS Code 화면</strong>에서 눌러 봅니다.</> },
+  github: { label: 'GitHub.com의 Copilot', plain: true, description: <>이슈를 맡기면 <strong>클라우드에서 PR을 만들어 오고</strong>, PR 리뷰도 남깁니다.</> },
   cloudflow: { label: '클라우드 흐름 (DPA)', plain: true, description: <>커넥터로 <strong>메일·승인·알림 같은 서비스를 이어</strong> 업무 절차를 자동화합니다.</> },
 };
 /** 제품별 보기의 열 id — Office 화면은 앱(surface)별로 나눈다 */
-const productOf = (s: Scenario) => (s.agent === 'chat' || s.agent === 'cowork' ? s.agent : s.surface ?? s.agent);
+const productOf = (s: Scenario) => (s.agent === 'chat' || s.agent === 'cowork' || s.agent === 'vscode' || s.agent === 'github' ? s.agent : s.surface ?? s.agent);
 
 interface Entry { id: string; order: number; title: string; badge: string; scenario: Scenario | null }
 
@@ -70,7 +72,7 @@ export function TrackList({ track }: { track: string }) {
         return `::view-transition-group(scenario-${e.id}) { z-index: ${10 - away}; animation-delay: ${expanded ? Math.min(i * 12, 48) : 0}ms; }`;
       }).join('\n')}</style>
       <header className="booth-hero">
-        {DRAFT ? <DraftTrackArt /> : <img className="booth-hero-art" src="brand/signiture/copilot-signature.png" alt="" aria-hidden="true" />}
+        {DRAFT ? <DraftTrackArt /> : <img className="booth-hero-art is-ghcp" src="logo/ghcp/copilot.svg" alt="" aria-hidden="true" />}
         <div className="booth-hero-inner">
           <button type="button" className="booth-back" onClick={() => go(HASH_HOME)}>
             <ArrowLeftRegular aria-hidden="true" />{COPY.backToHome}

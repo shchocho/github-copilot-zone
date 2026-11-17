@@ -49,6 +49,10 @@ const TRACK_ICONS: Record<string, JSX.Element> = {
   'copilot-code': <CodeFilled />,
   'power-automate': <FlowFilled />,
   'copilot-studio': <BotFilled />,
+  completions: <i className="codicon codicon-sparkle" />,
+  chat: <i className="codicon codicon-comment-discussion" />,
+  agent: <i className="codicon codicon-agent" />,
+  cloud: <i className="codicon codicon-github" />,
 };
 export function TrackIcon({ id, fallback }: { id: string; fallback?: string }) {
   return TRACK_ICONS[id] ?? <span>{fallback}</span>;

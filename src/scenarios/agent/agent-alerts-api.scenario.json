@@ -1,0 +1,278 @@
+{
+  "id": "agent-alerts-api",
+  "track": "agent",
+  "order": 1,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "센서 경보 API를 에이전트에 맡겨 테스트 통과까지",
+  "summary": "목표를 한 문장으로 주면 에이전트가 라우트 · 서비스 · 테스트를 고치고, 승인받아 테스트를 돌리고, 실패를 스스로 고칩니다.",
+  "before": "라우트, 서비스, 테스트 파일을 하나씩 열어 고치고, 테스트를 돌리고, 실패하면 원인을 찾아 다시 고칩니다.",
+  "hook": "목표를 주면 여러 파일 수정 → 테스트 실행 → 실패 수정까지 에이전트가 이어서 하고, 사람은 실행과 결과만 확인합니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "feature/sensor-alerts",
+    "chat": true,
+    "agent": "Agent",
+    "context": ["src/routes/sensors.ts"],
+    "tree": [
+      ".github/copilot-instructions.md",
+      "src/app.ts",
+      "src/routes/sensors.ts",
+      "src/services/alerts.ts",
+      "src/services/readings.ts",
+      "src/types.ts",
+      "test/alerts.test.ts",
+      "test/readings.test.ts",
+      "package.json",
+      "README.md"
+    ],
+    "edits": {
+      "files": ["src/services/alerts.ts", "src/routes/sensors.ts", "test/alerts.test.ts"],
+      "on": "e1",
+      "kept": "kept",
+      "added": 61,
+      "removed": 0
+    }
+  },
+  "scene": {
+    "eyebrow": "오늘 10:10 · 스프린트 마감 D-2",
+    "art": "dev-issue",
+    "artSlots": {
+      "파일": "sensors.ts",
+      "강조": "// TODO: 경보 API (#142)",
+      "메모": "라우트·서비스·테스트 다 고쳐야 함",
+      "그림제목": "이번 스프린트 할 일",
+      "항목1": "#142 센서 경보 API",
+      "항목2": "#147 대시보드 필터",
+      "항목3": "#151 펌웨어 로그 정리",
+      "배지": "D-2"
+    },
+    "headline": "작은 API 하나인데 ‹‹고칠 파일이 세 개, 테스트까지››",
+    "sub": "누리테크 설비 모니터링 팀의 백엔드 개발자입니다. 임계값을 넘은 측정값을 경보로 돌려주는 API를 오늘 안에 올려야 합니다.",
+    "points": [
+      { "icon": "code", "scene": "라우트 · 서비스 · 테스트", "say": "API 하나에 파일 세 개를 같은 규칙으로 고쳐야 해요." },
+      { "icon": "alert", "scene": "테스트가 깨지면 처음부터", "say": "실패 메시지를 보고 원인을 찾느라 흐름이 끊겨요." },
+      { "icon": "checkdoc", "scene": "팀 규칙도 지켜야", "say": "응답 형식과 테스트 이름 규칙이 문서에 따로 있어요." },
+      { "icon": "clock", "scene": "스프린트 마감 이틀 전", "say": "남은 이슈가 많아서 이건 빨리 끝내고 싶어요." }
+    ]
+  },
+  "overview": [
+    { "icon": "send", "title": "목표 한 문장", "desc": "채팅의 Agent에게 만들 API와 완료 조건(테스트 통과)을 적습니다." },
+    { "icon": "docsearch", "title": "코드와 팀 규칙 읽기", "desc": "관련 파일과 copilot-instructions.md를 읽고 계획을 세웁니다." },
+    { "icon": "code", "title": "여러 파일 수정", "desc": "서비스 · 라우트 · 테스트를 한 번에 고칩니다." },
+    { "icon": "shield", "title": "실행 전 승인", "desc": "터미널 명령은 사람이 허용해야 실행됩니다." },
+    { "icon": "refresh", "title": "실패하면 스스로 수정", "desc": "테스트 결과를 읽고 고친 뒤 다시 돌립니다." }
+  ],
+  "workbench": {
+    "task": "센서 경보 API",
+    "artifacts": {
+      "routes": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "read",
+        "name": "sensors.ts",
+        "where": "src/routes",
+        "code": {
+          "path": "src/routes/sensors.ts",
+          "kept": "kept",
+          "lines": [
+            { "t": "import { Router } from 'express';" },
+            { "t": "import { latestReadings } from '../services/readings';" },
+            { "t": "import { findAlerts } from '../services/alerts';", "diff": "add", "only": ["route"] },
+            { "t": "" },
+            { "t": "export const sensors = Router();" },
+            { "t": "" },
+            { "t": "sensors.get('/:id/readings', async (req, res) => {" },
+            { "t": "  const rows = await latestReadings(req.params.id);" },
+            { "t": "  if (!rows) return res.status(404).json({ error: 'SENSOR_NOT_FOUND' });" },
+            { "t": "  res.json({ data: rows });" },
+            { "t": "});" },
+            { "t": "" },
+            { "t": "// TODO: 경보 API (#142)", "cursor": true, "not": ["route"] },
+            { "t": "// TODO: 경보 API (#142)", "diff": "del", "only": ["route"] },
+            { "t": "sensors.get('/:id/alerts', async (req, res) => {", "diff": "add", "only": ["route"] },
+            { "t": "  const threshold = Number(req.query.threshold ?? 80);", "diff": "add", "only": ["route"] },
+            { "t": "  const alerts = await findAlerts(req.params.id, threshold);", "diff": "add", "only": ["route"] },
+            { "t": "  if (!alerts) return res.status(404).json({ error: 'SENSOR_NOT_FOUND' });", "diff": "add", "only": ["route"] },
+            { "t": "  res.json({ data: alerts });", "diff": "add", "only": ["route"] },
+            { "t": "});", "diff": "add", "only": ["route"] }
+          ]
+        }
+      },
+      "alerts": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "alerts.ts",
+        "where": "src/services",
+        "code": {
+          "path": "src/services/alerts.ts",
+          "added": true,
+          "kept": "kept",
+          "lines": [
+            { "t": "import { latestReadings } from './readings';", "diff": "add" },
+            { "t": "import type { Alert } from '../types';", "diff": "add" },
+            { "t": "", "diff": "add" },
+            { "t": "/** 임계값을 넘은 측정값을 최근 순으로 돌려준다. 센서가 없으면 null */", "diff": "add" },
+            { "t": "export async function findAlerts(sensorId: string, threshold: number): Promise<Alert[] | null> {", "diff": "add" },
+            { "t": "  const rows = await latestReadings(sensorId);", "diff": "add" },
+            { "t": "  if (!rows) return null;", "diff": "add" },
+            { "t": "  return rows", "diff": "add" },
+            { "t": "    .filter(r => r.value >= threshold)", "diff": "add", "not": ["fix"] },
+            { "t": "    .filter(r => r.value >= threshold)", "diff": "del", "only": ["fix"] },
+            { "t": "    .filter(r => r.value > threshold)", "diff": "add", "only": ["fix"] },
+            { "t": "    .map(r => ({ sensorId, value: r.value, at: r.at, level: r.value > threshold * 1.2 ? 'critical' : 'warning' }))", "diff": "add" },
+            { "t": "    .sort((a, b) => b.at.localeCompare(a.at));", "diff": "add" },
+            { "t": "}", "diff": "add" }
+          ]
+        }
+      },
+      "test": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "alerts.test.ts",
+        "where": "test",
+        "code": {
+          "path": "test/alerts.test.ts",
+          "added": true,
+          "kept": "kept",
+          "lines": [
+            { "t": "import { describe, it, expect } from 'vitest';", "diff": "add" },
+            { "t": "import { findAlerts } from '../src/services/alerts';", "diff": "add" },
+            { "t": "", "diff": "add" },
+            { "t": "describe('findAlerts', () => {", "diff": "add" },
+            { "t": "  it('임계값을 넘은 측정값만 돌려준다', async () => {", "diff": "add" },
+            { "t": "    const alerts = await findAlerts('TH-204', 80);", "diff": "add" },
+            { "t": "    expect(alerts?.map(a => a.value)).toEqual([97, 84]);", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "  it('임계값과 같은 값은 경보가 아니다', async () => {", "diff": "add" },
+            { "t": "    expect(await findAlerts('TH-210', 80)).toHaveLength(0);", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "  it('없는 센서면 null', async () => {", "diff": "add" },
+            { "t": "    expect(await findAlerts('NOPE', 80)).toBeNull();", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "});", "diff": "add" }
+          ]
+        }
+      },
+      "run1": {
+        "app": "vscode",
+        "kind": "term",
+        "origin": "made",
+        "name": "터미널",
+        "where": "pwsh",
+        "term": {
+          "lines": [
+            { "t": "npm test -- alerts", "tone": "cmd" },
+            { "t": "" },
+            { "t": "> sensor-hub@1.4.0 test", "tone": "dim" },
+            { "t": "> vitest run alerts", "tone": "dim" },
+            { "t": "" },
+            { "t": " ❯ test/alerts.test.ts (3 tests | 1 failed) 21ms", "tone": "warn" },
+            { "t": "   ✓ 임계값을 넘은 측정값만 돌려준다", "tone": "ok" },
+            { "t": "   × 임계값과 같은 값은 경보가 아니다", "tone": "err" },
+            { "t": "     → expected [ { sensorId: 'TH-210', value: 80, … } ] to have a length of 0", "tone": "err" },
+            { "t": "   ✓ 없는 센서면 null", "tone": "ok" },
+            { "t": "" },
+            { "t": " Test Files  1 failed (1)", "tone": "err" },
+            { "t": "      Tests  1 failed | 2 passed (3)", "tone": "err" }
+          ]
+        }
+      },
+      "run2": {
+        "app": "vscode",
+        "kind": "term",
+        "origin": "made",
+        "name": "터미널",
+        "where": "pwsh",
+        "term": {
+          "lines": [
+            { "t": "npm test -- alerts", "tone": "cmd" },
+            { "t": "" },
+            { "t": "> sensor-hub@1.4.0 test", "tone": "dim" },
+            { "t": "> vitest run alerts", "tone": "dim" },
+            { "t": "" },
+            { "t": " ✓ test/alerts.test.ts (3 tests) 17ms", "tone": "ok" },
+            { "t": "" },
+            { "t": " Test Files  1 passed (1)", "tone": "ok" },
+            { "t": "      Tests  3 passed (3)", "tone": "ok" },
+            { "t": "   Duration  412ms", "tone": "dim" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "오른쪽 채팅의 에이전트에게 목표와 완료 조건을 적었습니다. 보내 볼까요?",
+      "action": "보내기"
+    },
+    {
+      "role": "user",
+      "text": "센서마다 임계값을 넘은 측정값을 경보로 돌려주는 GET /api/sensors/:id/alerts 를 추가해 줘. 서비스 함수와 테스트도 만들고, 테스트가 통과할 때까지 확인해 줘."
+    },
+    { "role": "tool", "tool": "`src/routes/sensors.ts` 읽기", "delayMs": 700 },
+    { "role": "tool", "tool": "`src/services/readings.ts` 읽기", "delayMs": 600 },
+    { "role": "tool", "tool": "`.github/copilot-instructions.md` 읽기", "delayMs": 600 },
+    {
+      "role": "assistant",
+      "text": "팀 규칙(**응답은 `{ data }` 형식, 없는 센서는 404 `SENSOR_NOT_FOUND`, 테스트 이름은 한국어**)을 확인했습니다. 이렇게 진행하겠습니다.\n\n✅ `src/services/alerts.ts`에 `findAlerts()`를 새로 만듭니다\n✅ `sensors.ts`의 TODO 자리에 경보 라우트를 넣습니다\n✅ `test/alerts.test.ts`를 만들고 테스트를 돌려 확인합니다"
+    },
+    { "role": "tool", "tool": "`src/services/alerts.ts` 편집됨", "writes": "alerts", "sets": "e1", "delayMs": 500 },
+    { "role": "tool", "tool": "`src/routes/sensors.ts` 편집됨", "opens": "routes", "sets": "route", "delayMs": 900 },
+    { "role": "tool", "tool": "`test/alerts.test.ts` 편집됨", "writes": "test", "delayMs": 500 },
+    {
+      "role": "approve",
+      "what": "'npm' 명령을 실행하시겠습니까?",
+      "rows": [{ "label": "명령", "value": "npm test -- alerts" }],
+      "line": "터미널 명령은 실행하기 전에 사람이 허용해야 합니다.",
+      "go": "허용",
+      "denied": "명령을 건너뛰었습니다. 테스트는 직접 돌려 확인해야 합니다."
+    },
+    { "role": "tool", "tool": "`npm test -- alerts` 실행됨", "writes": "run1", "delayMs": 600 },
+    {
+      "role": "assistant",
+      "text": "테스트 3개 중 **1개가 실패**했습니다. 임계값과 **같은 값(80)**도 경보로 잡혔습니다. 비교를 `>=`에서 `>`로 고친 뒤 다시 돌리겠습니다."
+    },
+    { "role": "tool", "tool": "`src/services/alerts.ts` 편집됨", "opens": "alerts", "sets": "fix", "delayMs": 900 },
+    {
+      "role": "approve",
+      "what": "'npm' 명령을 실행하시겠습니까?",
+      "rows": [{ "label": "명령", "value": "npm test -- alerts" }],
+      "line": "같은 명령을 다시 실행합니다.",
+      "go": "허용",
+      "denied": "명령을 건너뛰었습니다."
+    },
+    { "role": "tool", "tool": "`npm test -- alerts` 실행됨", "writes": "run2", "delayMs": 600 },
+    {
+      "role": "assistant",
+      "text": "테스트 3개가 **모두 통과**했습니다.\n\n✅ `findAlerts()` — 임계값을 넘은 값만, 120% 초과는 `critical`\n✅ `GET /api/sensors/:id/alerts?threshold=80`\n✅ 테스트 3개(정상 · 경계값 · 없는 센서)\n\n변경된 파일 3개를 검토한 뒤 **Keep**으로 받아들이세요."
+    },
+    {
+      "role": "cue",
+      "text": "편집기와 채팅 아래 목록에서 바뀐 내용을 확인했다면, 채팅 입력란 위의 **Keep**을 눌러 받아들입니다.",
+      "action": "Keep",
+      "target": "keep"
+    },
+    { "role": "tool", "tool": "변경 내용 3개 파일 유지", "sets": "kept", "delayMs": 400 }
+  ],
+  "recap": [
+    { "icon": "send", "name": "목표 한 문장", "desc": "만들 API와 \"테스트 통과까지\"라는 완료 조건을 함께 줬습니다." },
+    { "icon": "code", "name": "여러 파일 수정", "desc": "서비스 · 라우트 · 테스트 3개 파일을 팀 규칙대로 고쳤습니다." },
+    { "icon": "shield", "name": "실행 전 승인", "desc": "터미널 명령은 두 번 모두 사람이 허용한 뒤에 실행됐습니다." },
+    { "icon": "refresh", "name": "실패를 스스로 수정", "desc": "실패한 경계값 테스트를 읽고 비교식을 고쳐 3개 모두 통과시켰습니다." }
+  ],
+  "finish": {
+    "sub": "목표 한 문장으로 경보 API를 만들고, 실패한 테스트까지 고쳐 모두 통과시킨 뒤 변경 내용을 받아들였습니다.",
+    "outs": [
+      { "app": "vscode", "name": "src/services/alerts.ts", "note": "새 파일 · findAlerts()" },
+      { "app": "vscode", "name": "src/routes/sensors.ts", "note": "경보 라우트 추가" },
+      { "app": "vscode", "name": "test/alerts.test.ts", "note": "테스트 3개 통과" }
+    ]
+  },
+  "anonymized": true
+}

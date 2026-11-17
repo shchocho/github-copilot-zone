@@ -17,6 +17,9 @@ import { WE } from '../components/ui';
 import { Cowork } from './Cowork';
 import { AppWindow } from '../surfaces/AppWindow';
 import { TeamsApp } from '../surfaces/TeamsApp';
+import { VsCodeWindow, VsConfirm, VsStep, VsWorking } from '../surfaces/vscode/VsCode';
+import { KEY_TARGETS } from '../surfaces/vscode/labels';
+import { GitHubWeb } from '../surfaces/github/GitHubWeb';
 import { DoneStage, OverviewStage, PainStage, SceneStage } from './Stages';
 
 const LABEL: Record<string, string> = { pain: '상황', overview: '흐름', demo: '체험', done: '결과' };
@@ -147,10 +150,14 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
           hold={i === holdAt}
           acts={actsMark}
           {...(s.agent === 'flow' ? { toolIco: 'logo/copilot/power-automate.svg' } : {})}
+          {...(s.agent === 'vscode' || s.agent === 'github' ? { toolView: (t: string, a: boolean) => <VsStep text={t} active={a} /> } : {})}
           {...(i === firstUserIdx && pick ? { pick } : {})}
         />
       )))}
-      {holdAt === null && p.approve && (
+      {holdAt === null && p.approve && s.agent === 'vscode' && (
+        <VsConfirm key={p.shown} a={p.approve} denied={deniedAt === p.shown} onAllow={p.act} onDeny={() => setDeniedAt(p.shown)} onBack={() => setDeniedAt(null)} />
+      )}
+      {holdAt === null && p.approve && s.agent !== 'vscode' && (
         <Permission
           key={p.shown}
           a={p.approve}
@@ -161,7 +168,7 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
           note={p.approve.warn ? <>⚠ {p.approve.warn}</> : undefined}
         />
       )}
-      {p.busy && <Working plain={s.agent === 'flow'} />}
+      {p.busy && (s.agent === 'vscode' || s.agent === 'github' ? <VsWorking /> : <Working plain={s.agent === 'flow'} />)}
     </>
   );
 
@@ -207,6 +214,21 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
           <div className="desk-win is-app">
             {s.agent === 'teams' ? (
               <TeamsApp s={s} shown={p.shown} mark={mark} target={holdAt === null ? p.pending?.target : undefined} onAct={p.act} ask={ask} />
+            ) : s.agent === 'vscode' ? (
+              <VsCodeWindow
+                s={s} st={st} ids={ids} mark={mark} streamRef={streamRef}
+                ask={ask} onSend={ask ? onSend : undefined}
+                target={holdAt === null ? p.pending?.target : undefined} onAct={p.act}
+              >
+                {stream}
+              </VsCodeWindow>
+            ) : s.agent === 'github' ? (
+              <GitHubWeb
+                s={s} st={st} ids={ids} mark={mark} streamRef={streamRef}
+                target={holdAt === null ? p.pending?.target : undefined} onAct={p.act}
+              >
+                {stream}
+              </GitHubWeb>
             ) : office ? (
               <AppWindow
                 s={s} st={st} vars={vars} ids={ids} shown={p.shown} streamRef={streamRef} mark={mark}
@@ -281,7 +303,8 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
               {holdAt === null && p.pending && pickDone && (
                 <Tip zone={p.pending.target ? `[data-act="${p.pending.target}"]` : '.zone-composer'}>
                   <Bubble q={p.pending.text}>
-                    {p.pending.target ? <Hint>화면에서 <b>{p.pending.action}</b> 단추를 눌러 보세요.</Hint>
+                    {p.pending.target && KEY_TARGETS[p.pending.target] ? <Hint>키보드에서 <Key>{KEY_TARGETS[p.pending.target].label}</Key>을 누르거나 화면의 <b>{p.pending.action}</b>을 눌러 보세요.</Hint>
+                      : p.pending.target ? <Hint>화면에서 <b>{p.pending.action}</b> 단추를 눌러 보세요.</Hint>
                       : p.ask ? <Hint><Key>{WE.send}</Key>을 눌러 보내 보세요.</Hint>
                       : <CueButton onClick={p.act}>{p.pending.action}</CueButton>}
                   </Bubble>

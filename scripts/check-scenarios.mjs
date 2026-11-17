@@ -8,10 +8,10 @@ import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../src/scenarios/', import.meta.url)); // .pathname 은 Windows 에서 경로가 깨짐
-const TRACKS = ['sales', 'hr', 'finance', 'procurement', 'ops', 'teams-basics', 'm365-apps', 'copilot-code', 'power-automate', 'copilot-studio'];
-const AGENTS = ['chat', 'cowork', 'office', 'flow', 'studio', 'code', 'teams'];
+const TRACKS = ['completions', 'chat', 'agent', 'cloud'];
+const AGENTS = ['chat', 'cowork', 'office', 'flow', 'studio', 'code', 'teams', 'vscode', 'github'];
 /** 앱 창에서 재생하는 agent 와 그 화면(surface) */
-const WINDOWS = { office: ['word', 'excel', 'powerpoint', 'outlook', 'forms', 'teams'], flow: ['cloudflow', 'deskflow'], studio: ['studio'], code: ['code'] };
+const WINDOWS = { office: ['word', 'excel', 'powerpoint', 'outlook', 'forms', 'teams'], flow: ['cloudflow', 'deskflow'], studio: ['studio'], code: ['code'], vscode: ['vscode'], github: ['github'] };
 const ROLES = new Set(['user', 'assistant', 'tool', 'note', 'cue', 'spot', 'approve', 'choice', 'hunt']);
 const HUNT_TARGETS = new Set(['model', 'effort', 'attach', 'new', 'mine', 'auto', 'custom']);
 const ZONES = { chat: ['rail', 'top', 'stream', 'actions', 'composer'], cowork: ['rail', 'stream', 'composer'], office: ['ribbon', 'canvas', 'pane', 'composer'], teams: ['rail', 'list', 'header', 'main', 'composer'] }; // 앱 창 화면(WINDOWS)은 모두 office 와 같은 영역을 쓴다
@@ -78,6 +78,9 @@ for (const track of readdirSync(ROOT)) {
     for (const [k, a] of Object.entries(arts)) {
       if (!a.app || !a.kind || !a.origin || !a.name || typeof a.where !== 'string') err(file, `결과물 ${k}: app·kind·origin·name·where 가 필요합니다`);
       if (a.kind === 'flow' && !(a.flow?.steps?.length && ['cloudflow', 'deskflow'].includes(a.app))) err(file, `결과물 ${k}: flow 는 app(cloudflow · deskflow)과 flow.steps 가 필요합니다`);
+      if (a.kind === 'code' && !(a.code?.path && Array.isArray(a.code.lines) && a.code.lines.every(l => typeof l.t === 'string'))) err(file, `결과물 ${k}: code 는 code.path 와 code.lines[].t 가 필요합니다`);
+      if (a.kind === 'term' && !Array.isArray(a.term?.lines)) err(file, `결과물 ${k}: term 은 term.lines 가 필요합니다`);
+      if (a.kind === 'gh' && !(a.gh?.type && a.gh.repo && a.gh.title && Array.isArray(a.gh.events) && Array.isArray(a.gh.body))) err(file, `결과물 ${k}: gh 는 type · repo · title · body · events 가 필요합니다`);
       if (a.kind === 'flow') {
         const spots = ['menu', 'save', ...(a.flow?.screen?.fields ?? []).map(f => f.id)];
         for (const x of a.flow?.steps ?? []) for (const d of x.do ?? []) if (!a.flow.screen || !spots.includes(d.to)) err(file, `결과물 ${k}: 화면 조작 to "${d.to}" 는 screen 의 menu · save · 입력란 id 중 하나여야 합니다`);

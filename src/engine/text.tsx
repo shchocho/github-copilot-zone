@@ -50,12 +50,17 @@ export function writeLength(a: Artifact, ids: string[]): number {
   if (a.kind === 'teams') return a.teams ? a.teams.body.length + 2 : 0;
   if (a.kind === 'deck') return a.deck ? a.deck.slides.length : 0;
   if (a.kind === 'flow') return a.flow ? flowBeats(filterBy(a.flow.steps, ids)).length : 0;
+  if (a.kind === 'code') return a.code ? filterBy(a.code.lines, ids).length : 0;
+  if (a.kind === 'term') return a.term ? filterBy(a.term.lines, ids).length : 0;
   return a.blocks ? filterBy(a.blocks, ids).length : 0;
 }
 
-/** **굵게** */
+/** **굵게** · `코드` */
 export function Bold({ text }: { text: string }) {
-  return <>{text.split(/\*\*/).map((t, i) => (i % 2 ? <b key={i}>{t}</b> : <span key={i}>{t}</span>))}</>;
+  const code = (t: string, k: number) => (t.includes('`')
+    ? <span key={k}>{t.split(/(`[^`]+`)/).map((x, j) => (x.startsWith('`') && x.endsWith('`') && x.length > 1 ? <code key={j} className="sc-ic">{x.slice(1, -1)}</code> : x))}</span>
+    : <span key={k}>{t}</span>);
+  return <>{text.split(/\*\*/).map((t, i) => (i % 2 ? <b key={i}>{t}</b> : code(t, i)))}</>;
 }
 
 type Block = { kind: 'p' | 'code' | 'quote'; lines: string[] } | { kind: 'check'; items: string[] };

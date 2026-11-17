@@ -1,68 +1,49 @@
-import { useEffect, useState } from 'react';
 import { go, HASH_HOME } from '../router';
 import { COPY } from '../copy';
-import { DRAFT } from '../look';
-import { DraftHero } from './DraftArt';
 
-const HERO = {
-  landscape: 'brand/hero/copilot-hero-light-16x9.png',
-  motion: 'brand/hero/copilot-hero-motion-light-16x9.mp4',
-};
-
-function usePortrait() {
-  const [p, setP] = useState(() => window.matchMedia('(orientation: portrait)').matches);
-  useEffect(() => {
-    const mq = window.matchMedia('(orientation: portrait)');
-    const on = () => setP(mq.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
-  }, []);
-  return p;
-}
+/** 대기 화면 오른쪽의 편집기 미리보기 — 회색 제안이 떴다가 Tab 으로 받아들여지는 모습을 되풀이한다(실제 화면 모양, 장식 그림 아님) */
+const PREVIEW: { t: string; g?: boolean }[] = [
+  { t: '// 센서별 최근 1시간 평균 온도를 구한다' },
+  { t: 'export function averageBySensor(readings: Reading[]) {' },
+  { t: '  const groups = new Map<string, number[]>();', g: true },
+  { t: '  for (const r of readings) {', g: true },
+  { t: '    groups.set(r.sensorId, [...(groups.get(r.sensorId) ?? []), r.value]);', g: true },
+  { t: '  }', g: true },
+  { t: '  return [...groups].map(([id, v]) => ({ id, avg: mean(v) }));', g: true },
+  { t: '}' },
+];
 
 /** 대기(어트랙트) 화면 — 화면 아무 곳이나 누르면 홈으로 */
 export function Attract({ limited = false }: { limited?: boolean }) {
-  usePortrait();
   return (
-    <main
-      className={`booth-attract${limited ? ' is-limited' : ''}`}
-      data-brand-theme="m365-combined"
-      onClick={limited ? undefined : () => go(HASH_HOME)}
-    >
-      {DRAFT ? (
-        <DraftHero />
-      ) : limited ? (
-        <img className="booth-attract-art" src={HERO.landscape} alt="" />
-      ) : (
-        <video
-          key={HERO.motion}
-          className="booth-attract-art"
-          src={HERO.motion}
-          poster={HERO.landscape}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden="true"
-        />
-      )}
-      {limited ? (
-        <div className="booth-attract-say">
-          <img className="booth-limited-logo" src="logo/copilot/copilot-horiz-black.png" alt="Copilot" />
-          <h1>더 큰 화면에서<br />접속해 주세요</h1>
-          <p>PC나 태블릿에서 체험해 주세요.<br />창을 작게 열었다면 크기를 늘려 주세요.</p>
-        </div>
-      ) : (
-        <div className="booth-attract-say">
-          <h1>
-            <span className="booth-lockup-hold">
-              <img className="booth-lockup" src="logo/copilot/copilot-horiz-black.png" alt="Copilot" />
-              {COPY.particle}
-            </span>{' '}
-            함께라면, <span>{COPY.tagline}</span>
-          </h1>
-          <button type="button" className="booth-cta">체험해보기</button>
-        </div>
+    <main className={`ghcp-attract${limited ? ' is-limited' : ''}`} onClick={limited ? undefined : () => go(HASH_HOME)}>
+      <div className="ghcp-attract-say">
+        <p className="ghcp-mark"><img src="logo/ghcp/copilot.svg" alt="" /><b>GitHub Copilot</b></p>
+        {limited ? (
+          <>
+            <h1>더 큰 화면에서<br />접속해 주세요</h1>
+            <p>PC나 태블릿에서 체험해 주세요.<br />창을 작게 열었다면 크기를 늘려 주세요.</p>
+          </>
+        ) : (
+          <>
+            <h1>GitHub Copilot{COPY.particle} 함께라면,<br /><span>{COPY.tagline}</span></h1>
+            <p>{COPY.homeSub}</p>
+            <button type="button" className="ghcp-cta">체험해보기</button>
+          </>
+        )}
+      </div>
+      {!limited && (
+        <figure className="ghcp-preview" aria-hidden="true">
+          <figcaption><i className="codicon codicon-vscode" />sensor-hub — aggregate.ts</figcaption>
+          <div className="ghcp-preview-code">
+            {PREVIEW.map((l, i) => (
+              <p key={i} className={l.g ? 'is-ghost' : undefined} style={{ '--i': i } as React.CSSProperties}>
+                <span>{i + 18}</span><code>{l.t}</code>
+              </p>
+            ))}
+            <span className="ghcp-preview-tab">수락 <kbd>Tab</kbd></span>
+          </div>
+        </figure>
       )}
     </main>
   );
