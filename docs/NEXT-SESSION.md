@@ -2,6 +2,16 @@
 
 아래 "붙여 넣을 프롬프트"를 이 저장소를 연 Claude Code 세션에 그대로 붙여 넣으세요. 다른 PC(노트북 등)에서는 먼저 클론(이미 있으면 git pull)하고 npm install 을 한 뒤 시작합니다.
 
+## 2026-11-18 진행 결과 (이 프롬프트의 1~6 실행 후)
+
+- 1~4 완료: 시나리오 10편 모두 결과 화면까지(e2e) 1920·1600·1440·1371×768·1280·768×600 에서 통과, 콘솔 오류 0.
+  실제 키(Tab · Ctrl+→ · Ctrl+I), reduced-motion(RM=1), npm run build · build:local(file:// 로 열어 확인) 통과.
+- 5 배포: 마지막 Actions 실행(2f6d13f)은 PAGE_PASSWORD 가 없어 배포 단계를 건너뜀. gh-pages 브랜치 없음.
+  비밀 값을 넣은 뒤 main 에 푸시하면 배포되고, 저장소 Settings > Pages 에서 gh-pages 브랜치를 소스로 골라야 주소가 열린다.
+- 6 문구: VS Code main 3b381b1(11-18)로 다시 뽑아 확인 — Copilot 관련 문구 변경 없음. Ignite 2026 변경은 docs/UI-SOURCES.md 참고.
+- 남은 일: UI-SOURCES.md 의 "아직 확인하지 못한 것"을 실제 화면으로 확인, M365 화면 코드(Office · Teams · Studio · Flow · Cowork) 정리 여부 결정.
+- Playwright: 저장소에 의존성으로 넣지 않음. 이 노트북에서는 npx 캐시의 playwright 와 PW_CHROME(설치된 chromium 경로)로 돌렸다.
+
 ## 붙여 넣을 프롬프트
 
 ```
