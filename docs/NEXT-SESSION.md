@@ -59,7 +59,7 @@ VS Code 안의 GitHub Copilot 을 실제 UI와 거의 똑같이 눌러 보는 �
 ```bash
 mkdir -p scripts/ui-labels/ref && cd scripts/ui-labels/ref
 git -c core.longpaths=true clone --depth 1 --filter=blob:none --sparse https://github.com/microsoft/vscode.git vscode
-cd vscode && MSYS_NO_PATHCONV=1 git sparse-checkout set --no-cone '/src/vs/workbench/contrib/chat/' '/src/vs/workbench/contrib/inlineChat/' '/src/vs/editor/contrib/inlineCompletions/' '/src/vs/workbench/contrib/scm/' '/src/vs/workbench/contrib/terminalContrib/chatAgentTools/' '/package.json' && cd ..
+cd vscode && MSYS_NO_PATHCONV=1 git sparse-checkout set --no-cone '/src/vs/workbench/contrib/chat/' '/src/vs/workbench/contrib/inlineChat/' '/src/vs/editor/contrib/inlineCompletions/' '/src/vs/workbench/contrib/scm/' '/src/vs/workbench/contrib/terminalContrib/chatAgentTools/' '/src/vs/workbench/contrib/mcp/' '/package.json' && cd ..
 curl -sL -o ko.main.i18n.json https://raw.githubusercontent.com/microsoft/vscode-loc/main/i18n/vscode-language-pack-ko/translations/main.i18n.json
 cd .. && python -I labels.py ref/vscode ref/ko.main.i18n.json ref/labels.tsv
 python -I t.py "Allow Once" "Keep" "Undo"

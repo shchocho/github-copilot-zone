@@ -11,7 +11,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 (async () => {
   const browser = await chromium.launch(process.env.PW_CHROME ? { executablePath: process.env.PW_CHROME } : {}); // PW_CHROME: 설치된 브라우저 판이 playwright 와 다를 때
-  const page = await browser.newPage({ viewport: { width: +(process.env.W || 1600), height: +(process.env.H || 900) }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: +(process.env.W || 1600), height: +(process.env.H || 900) }, deviceScaleFactor: 1, ...(process.env.RM ? { reducedMotion: 'reduce' } : {}) }); // RM=1: prefers-reduced-motion
   const errors = [];
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text().slice(0, 200)); });
   page.on('pageerror', e => errors.push('PAGEERROR ' + String(e).slice(0, 300)));
