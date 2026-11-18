@@ -232,6 +232,8 @@ export interface MsgTool extends Filterable {
   role: 'tool'; tool: string; delayMs?: number; opens?: string; shows?: string; writes?: string; translate?: boolean;
   /** 이 도구가 끝나면 켜지는 깃발. 선택지 id 처럼 only/not 에 쓸 수 있다 (앱 창 화면에서 단계마다 설정이 늘어나는 연출) */
   sets?: string;
+  /** 화면 상태만 바꾸고 대화(세션 로그)에는 줄을 남기지 않는다 */
+  quiet?: boolean;
 }
 export interface MsgNote extends Filterable { role: 'note'; text: string; delayMs?: number }
 export interface MsgApprove extends Filterable {

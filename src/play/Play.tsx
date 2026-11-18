@@ -139,7 +139,7 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
   const stream = (
     <>
       {s.startedAt && <p className="sc-date">{s.startedAt}</p>}
-      {s.messages.slice(0, p.shown).map((m, i) => (!passes(ids, m) ? null : m.role === 'choice' ? (
+      {s.messages.slice(0, p.shown).map((m, i) => (!passes(ids, m) || (m.role === 'tool' && m.quiet) ? null : m.role === 'choice' ? (
         <div key={i} className="sc-user"><div className="sc-user-box"><p>{(o => o?.say ?? o?.label)(st.picks.find(x => x.key === m.key)?.option)}</p></div></div>
       ) : (
         <MessageView

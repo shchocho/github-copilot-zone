@@ -1,0 +1,155 @@
+{
+  "id": "cloud-assign-issue",
+  "track": "cloud",
+  "order": 1,
+  "agent": "github",
+  "surface": "github",
+  "model": "Auto",
+  "title": "GitHub 이슈를 Copilot에 맡기면 PR을 만들어 리뷰를 요청",
+  "summary": "이슈의 Assignees 에서 Copilot을 지정하면, 클라우드에서 Copilot이 코드를 고치고 테스트한 뒤 PR을 열고 리뷰를 요청합니다.",
+  "before": "작은 이슈도 브랜치를 만들고, 코드를 고치고, 테스트하고, PR 설명을 쓰는 데 반나절이 걸려 계속 미뤄집니다.",
+  "hook": "이슈를 Copilot에 배정하고 추가 지시만 적으면, 사람은 다른 일을 하다가 완성된 PR을 리뷰합니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "scene": {
+    "eyebrow": "오늘 09:10 · 백로그 정리",
+    "art": "dev-issue",
+    "artSlots": {
+      "파일": "readings.ts",
+      "강조": "// TODO: from/to 필터 (#153)",
+      "메모": "작은데 계속 밀리는 이슈",
+      "그림제목": "백로그",
+      "항목1": "#153 기간 필터 추가",
+      "항목2": "#155 README 예시 갱신",
+      "항목3": "#156 오류 코드 정리",
+      "배지": "3주째 대기"
+    },
+    "headline": "작은 이슈인데 ‹‹손댈 시간이 없어 3주째 대기››",
+    "sub": "측정값 조회 API에 기간 필터를 넣어 달라는 이슈 #153이 3주째 백로그에 있습니다. 어렵지 않지만 브랜치 · 테스트 · PR까지 하면 반나절이 듭니다.",
+    "points": [
+      { "icon": "clock", "scene": "쌓여 가는 작은 이슈", "say": "급한 일에 밀려 계속 다음 스프린트로 가요." },
+      { "icon": "split", "scene": "반복되는 준비 작업", "say": "브랜치 만들고, 테스트하고, PR 설명 쓰고…" },
+      { "icon": "people", "scene": "리뷰는 사람이", "say": "만드는 건 맡기고 검토만 하고 싶어요." }
+    ]
+  },
+  "overview": [
+    { "icon": "people", "title": "Copilot에 배정", "desc": "이슈 오른쪽 Assignees 에서 Copilot을 고릅니다." },
+    { "icon": "sliders", "title": "Assign to Copilot", "desc": "추가 지시(Optional prompt) · 기준 브랜치 · 모델을 정하고 Assign 합니다." },
+    { "icon": "code", "title": "클라우드에서 작업", "desc": "Copilot이 저장소를 읽고 고친 뒤 테스트를 돌립니다. 진행은 세션 로그로 봅니다." },
+    { "icon": "share", "title": "PR과 리뷰 요청", "desc": "작업이 끝나면 PR을 열고 배정한 사람에게 리뷰를 요청합니다." }
+  ],
+  "workbench": {
+    "task": "이슈 #153",
+    "artifacts": {
+      "issue": {
+        "app": "github",
+        "kind": "gh",
+        "origin": "read",
+        "name": "이슈 #153",
+        "where": "nuritech/sensor-hub",
+        "gh": {
+          "type": "issue",
+          "repo": "nuritech/sensor-hub",
+          "number": 153,
+          "title": "readings API에 기간(from/to) 필터 추가",
+          "state": "open",
+          "author": "nuri-pm",
+          "body": [
+            "대시보드에서 특정 기간의 측정값만 보고 싶다는 요청이 많습니다.",
+            "`GET /api/readings/:id` 에 `from` · `to` (ISO 8601) 쿼리를 받아 그 기간의 값만 돌려주세요.",
+            "**완료 조건**: 형식이 틀리면 400, `from > to` 도 400, 테스트 포함"
+          ],
+          "labels": ["enhancement", "api"],
+          "assignees": [{ "who": "Copilot", "bot": true, "only": ["go"] }],
+          "dialog": {
+            "on": "dlg",
+            "done": "go",
+            "prompt": "오류 응답은 팀 규칙({ error: 'UPPER_SNAKE_CODE' })을 따르고, 경계값(from = to) 테스트를 꼭 넣어 줘.",
+            "base": "main",
+            "model": "Auto"
+          },
+          "events": [
+            { "kind": "event", "who": "nuri-pm", "text": "added the **enhancement** **api** labels", "at": "3 weeks ago" },
+            { "kind": "event", "who": "me", "text": "assigned **Copilot**", "at": "now", "only": ["go"] },
+            { "kind": "pr-link", "who": "Copilot", "bot": true, "text": "linked a pull request that will close this issue", "at": "now", "only": ["pr"] }
+          ]
+        }
+      },
+      "pr": {
+        "app": "github",
+        "kind": "gh",
+        "origin": "made",
+        "name": "PR #154",
+        "where": "nuritech/sensor-hub",
+        "gh": {
+          "type": "pr",
+          "repo": "nuritech/sensor-hub",
+          "number": 154,
+          "title": "Add from/to range filter to readings API",
+          "state": "open",
+          "author": "Copilot",
+          "head": "copilot/readings-range-filter",
+          "base": "main",
+          "files": 3,
+          "body": [
+            "Fixes #153",
+            "`GET /api/readings/:id` 가 `from` · `to` (ISO 8601) 쿼리를 받아 기간 안의 측정값만 돌려줍니다.",
+            "- 형식이 틀리면 400 `INVALID_RANGE`, `from > to` 도 400 `INVALID_RANGE`",
+            "- `from = to` 경계값 · 형식 오류 · 정상 테스트 3개 추가"
+          ],
+          "reviewers": [{ "who": "me" }],
+          "assignees": [{ "who": "Copilot", "bot": true }, { "who": "me" }],
+          "labels": ["enhancement", "api"],
+          "checks": [{ "name": "test (20.x)", "state": "ok" }],
+          "events": [
+            { "kind": "commit", "who": "Copilot", "bot": true, "text": "Add from/to range filter to readings route" },
+            { "kind": "commit", "who": "Copilot", "bot": true, "text": "Add range filter tests including from = to boundary" },
+            { "kind": "event", "who": "Copilot", "bot": true, "text": "requested a review from **me**", "at": "now" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "이슈 #153 오른쪽 사이드바의 Assignees 에서 Copilot을 지정해 맡겨 봅니다.",
+      "action": "Assignees",
+      "target": "assign"
+    },
+    { "role": "tool", "tool": "Assign to Copilot", "quiet": true, "sets": "dlg", "delayMs": 300 },
+    {
+      "role": "cue",
+      "text": "Assign to Copilot 창이 열렸습니다. Optional prompt 에 팀 규칙과 꼭 넣을 테스트를 적었습니다. Assign 으로 맡깁니다.",
+      "action": "Assign",
+      "target": "assign-go"
+    },
+    { "role": "tool", "tool": "Copilot 배정됨", "quiet": true, "sets": "go", "delayMs": 500 },
+    { "role": "tool", "tool": "Read `src/routes/readings.ts`", "delayMs": 1000 },
+    { "role": "tool", "tool": "Read `.github/copilot-instructions.md`", "delayMs": 800 },
+    { "role": "tool", "tool": "Edited `src/routes/readings.ts`", "delayMs": 1000 },
+    { "role": "tool", "tool": "Edited `test/readings.test.ts`", "delayMs": 900 },
+    { "role": "tool", "tool": "Ran `npm test`", "delayMs": 1200 },
+    { "role": "tool", "tool": "PR #154 열림", "opens": "pr", "sets": "pr", "delayMs": 900 },
+    {
+      "role": "assistant",
+      "text": "이슈 #153 작업을 마치고 **PR #154**를 열었습니다.\n\n✅ `from` · `to` 기간 필터, 형식 오류와 `from > to` 는 400 `INVALID_RANGE`\n✅ 테스트 3개(정상 · 형식 오류 · `from = to` 경계값) 통과\n✅ 리뷰를 요청했습니다"
+    },
+    {
+      "role": "cue",
+      "text": "PR 타임라인 맨 아래에 Copilot이 나에게 리뷰를 요청한 기록이 생겼습니다. 이제 사람은 리뷰만 하면 됩니다.",
+      "action": "확인했습니다"
+    }
+  ],
+  "recap": [
+    { "icon": "people", "name": "배정 한 번", "desc": "Assignees 에서 Copilot을 고르고 추가 지시를 적어 Assign 했습니다." },
+    { "icon": "code", "name": "클라우드에서 작업", "desc": "Copilot이 코드 · 테스트를 고치고 테스트를 돌리는 과정을 세션 로그로 봤습니다." },
+    { "icon": "share", "name": "PR과 리뷰 요청", "desc": "이슈와 연결된 PR #154가 열리고 리뷰 요청이 왔습니다." }
+  ],
+  "finish": {
+    "sub": "이슈 #153을 Copilot에 배정하자 클라우드에서 기간 필터와 테스트를 만들고 PR #154를 연 뒤 리뷰를 요청했습니다.",
+    "outs": [
+      { "app": "github", "name": "PR #154 Add from/to range filter", "note": "Fixes #153 · 파일 3개" }
+    ]
+  },
+  "anonymized": true
+}

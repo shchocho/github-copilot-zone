@@ -1,0 +1,142 @@
+{
+  "id": "cloud-code-review",
+  "track": "cloud",
+  "order": 2,
+  "agent": "github",
+  "surface": "github",
+  "model": "Auto",
+  "title": "PR에 Copilot 코드 리뷰를 요청하고 제안을 바로 커밋",
+  "summary": "PR의 Reviewers 에서 Copilot에 리뷰를 요청하면 중요도가 달린 코멘트와 고친 코드(Suggested change)가 달립니다. 제안을 커밋하고 병합합니다.",
+  "before": "리뷰어가 바빠 PR이 며칠씩 기다리고, 받은 코멘트는 코드를 다시 열어 손으로 고칩니다.",
+  "hook": "사람 리뷰 전에 Copilot이 먼저 보고, 고칠 코드를 제안으로 달아 줍니다. 단추 하나로 반영하고 병합합니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "scene": {
+    "eyebrow": "오늘 15:00 · PR 대기 2일째",
+    "art": "dev-review",
+    "artSlots": {
+      "파일": "export.ts",
+      "강조": "rows.map(r => r.name).join(',')",
+      "메모": "리뷰어가 출장 중",
+      "그림제목": "PR #149 리뷰 대기",
+      "항목1": "CSV 내보내기 추가",
+      "항목2": "리뷰어 1명 필요",
+      "항목3": "금요일 배포 예정",
+      "배지": "대기 2일"
+    },
+    "headline": "PR은 올렸는데 ‹‹리뷰어가 볼 때까지 멈춤››",
+    "sub": "일별 측정값을 CSV로 내려받는 기능을 PR #149로 올렸습니다. 팀 리뷰어가 출장 중이라 이틀째 아무도 보지 못했습니다.",
+    "points": [
+      { "icon": "clock", "scene": "리뷰 대기", "say": "리뷰어 일정에 배포가 묶여요." },
+      { "icon": "alert", "scene": "놓치기 쉬운 문제", "say": "보안 · 경계값 문제는 직접 보면 잘 안 보여요." },
+      { "icon": "refresh", "scene": "코멘트 반영", "say": "코멘트마다 코드를 다시 열어 고쳐요." }
+    ]
+  },
+  "overview": [
+    { "icon": "people", "title": "Copilot에 리뷰 요청", "desc": "PR 오른쪽 Reviewers 에서 Copilot 옆 Request 를 누릅니다." },
+    { "icon": "docsearch", "title": "중요도별 코멘트", "desc": "Copilot은 Comment 리뷰를 남기고, 코멘트마다 High · Medium · Low 중요도를 붙입니다." },
+    { "icon": "code", "title": "Suggested change", "desc": "고칠 코드를 제안으로 달아 줍니다." },
+    { "icon": "check", "title": "커밋하고 병합", "desc": "Commit suggestion 으로 반영하고, 검사가 통과하면 병합합니다." }
+  ],
+  "workbench": {
+    "task": "PR #149 리뷰",
+    "artifacts": {
+      "pr": {
+        "app": "github",
+        "kind": "gh",
+        "origin": "made",
+        "name": "PR #149",
+        "where": "nuritech/sensor-hub",
+        "gh": {
+          "type": "pr",
+          "repo": "nuritech/sensor-hub",
+          "number": 149,
+          "title": "Add CSV export for daily readings",
+          "state": "open",
+          "stateBy": { "merged": "merged" },
+          "author": "me",
+          "head": "feature/csv-export",
+          "base": "main",
+          "files": 2,
+          "body": [
+            "일별 측정값을 CSV로 내려받는 `GET /api/sensors/:id/export.csv` 를 추가합니다.",
+            "- 열: 센서 이름 · 시각 · 값",
+            "- 테스트: 정상 · 값이 없는 날"
+          ],
+          "reviewers": [{ "who": "Copilot", "bot": true, "only": ["rq"] }],
+          "assignees": [{ "who": "me" }],
+          "labels": ["enhancement"],
+          "checks": [
+            { "name": "test (20.x)", "state": "ok", "not": ["c1"] },
+            { "name": "test (20.x)", "state": "run", "only": ["c1"], "not": ["ck"] },
+            { "name": "test (20.x)", "state": "ok", "only": ["ck"] }
+          ],
+          "events": [
+            { "kind": "commit", "who": "me", "text": "Add CSV export route and tests" },
+            { "kind": "event", "who": "me", "text": "requested a review from **Copilot**", "at": "now", "only": ["rq"] },
+            {
+              "kind": "review", "who": "Copilot", "bot": true, "text": "reviewed", "at": "now", "only": ["rv"],
+              "body": [
+                "**Pull request overview**",
+                "일별 측정값을 CSV로 내보내는 라우트와 테스트를 추가합니다. 셀 값 처리에서 보안 문제 1건, 응답 헤더에서 개선점 1건을 찾았습니다."
+              ]
+            },
+            {
+              "kind": "comment", "who": "Copilot", "bot": true, "text": "commented", "only": ["rv"],
+              "file": "src/routes/export.ts", "line": "18", "severity": "High",
+              "body": ["센서 이름이 `=` · `+` · `-` · `@` 로 시작하면 스프레드시트에서 수식으로 실행될 수 있습니다(CSV 수식 주입). 셀 앞에 `'` 를 붙여 텍스트로 다루세요."],
+              "suggestion": {
+                "del": ["  const cells = [r.name, r.at, String(r.value)];"],
+                "add": ["  const safe = (v: string) => (/^[=+\\-@]/.test(v) ? `'${v}` : v);", "  const cells = [safe(r.name), r.at, String(r.value)];"]
+              },
+              "act": { "id": "fix1", "label": "Commit suggestion" }
+            },
+            {
+              "kind": "comment", "who": "Copilot", "bot": true, "text": "commented", "only": ["rv"],
+              "file": "src/routes/export.ts", "line": "24", "severity": "Low",
+              "body": ["`Content-Disposition` 에 파일 이름이 없어 브라우저마다 저장 이름이 달라집니다. `attachment; filename=\"readings-<id>.csv\"` 를 고려해 보세요."]
+            },
+            { "kind": "commit", "who": "me", "text": "Escape spreadsheet formulas in CSV cells", "only": ["c1"] }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "PR #149 오른쪽 사이드바의 Reviewers 에서 Copilot 옆 Request 를 눌러 리뷰를 요청합니다.",
+      "action": "Request",
+      "target": "review"
+    },
+    { "role": "tool", "tool": "Copilot에 리뷰 요청", "quiet": true, "sets": "rq", "delayMs": 300 },
+    { "role": "tool", "tool": "Copilot이 PR을 검토하는 중", "quiet": true, "delayMs": 2200 },
+    { "role": "tool", "tool": "리뷰 코멘트 2개", "quiet": true, "sets": "rv", "delayMs": 400 },
+    {
+      "role": "cue",
+      "text": "중요도 High 코멘트에 고친 코드(Suggested change)가 달렸습니다. 센서 이름이 수식으로 실행되는 문제를 막는 코드입니다. 제안을 그대로 커밋합니다.",
+      "action": "Commit suggestion",
+      "target": "fix1"
+    },
+    { "role": "tool", "tool": "제안 커밋", "quiet": true, "sets": "c1", "delayMs": 400 },
+    { "role": "tool", "tool": "검사 실행", "quiet": true, "sets": "ck", "delayMs": 2000 },
+    {
+      "role": "cue",
+      "text": "제안을 반영한 커밋의 검사도 통과했습니다. Low 코멘트는 다음 PR에서 다루기로 하고 병합합니다.",
+      "action": "Merge pull request",
+      "target": "merge"
+    },
+    { "role": "tool", "tool": "병합", "quiet": true, "sets": "merged", "delayMs": 500 }
+  ],
+  "recap": [
+    { "icon": "people", "name": "기다리지 않는 첫 리뷰", "desc": "사람 리뷰어를 기다리지 않고 Copilot에게 먼저 리뷰를 받았습니다." },
+    { "icon": "alert", "name": "중요도가 보이는 코멘트", "desc": "High(CSV 수식 주입)와 Low(파일 이름)로 무엇부터 고칠지 바로 알 수 있었습니다." },
+    { "icon": "check", "name": "제안을 바로 커밋", "desc": "Suggested change 를 Commit suggestion 으로 반영하고, 검사 통과 후 병합했습니다." }
+  ],
+  "finish": {
+    "sub": "Copilot 코드 리뷰가 찾은 CSV 수식 주입 문제를 제안 코드 그대로 커밋해 고치고, 검사 통과 후 PR #149를 병합했습니다.",
+    "outs": [
+      { "app": "github", "name": "PR #149 Add CSV export for daily readings", "note": "리뷰 반영 · 병합" }
+    ]
+  },
+  "anonymized": true
+}

@@ -39,7 +39,7 @@ export const AGENTS = {
   code: { name: 'Copilot', full: 'Copilot Code' },
   teams: { name: 'Teams', full: 'Microsoft Teams' },
   vscode: { name: 'GitHub Copilot', full: 'VS Code의 GitHub Copilot' },
-  github: { name: 'GitHub Copilot', full: 'GitHub의 Copilot 코딩 에이전트' },
+  github: { name: 'GitHub Copilot', full: 'GitHub.com의 GitHub Copilot' },
 } as const;
 
 export const APPS = {
