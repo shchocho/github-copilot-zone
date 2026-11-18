@@ -215,9 +215,9 @@
       "role": "user",
       "text": "센서마다 임계값을 넘은 측정값을 경보로 돌려주는 GET /api/sensors/:id/alerts 를 추가해 줘. 서비스 함수와 테스트도 만들고, 테스트가 통과할 때까지 확인해 줘."
     },
-    { "role": "tool", "tool": "`src/routes/sensors.ts` 읽기", "delayMs": 700 },
-    { "role": "tool", "tool": "`src/services/readings.ts` 읽기", "delayMs": 600 },
-    { "role": "tool", "tool": "`.github/copilot-instructions.md` 읽기", "delayMs": 600 },
+    { "role": "tool", "tool": "Read `src/routes/sensors.ts`", "delayMs": 700 },
+    { "role": "tool", "tool": "Read `src/services/readings.ts`", "delayMs": 600 },
+    { "role": "tool", "tool": "Read `.github/copilot-instructions.md`", "delayMs": 600 },
     {
       "role": "assistant",
       "text": "**팀 규칙**(응답은 `{ data }` 형식, 없는 센서는 404 `SENSOR_NOT_FOUND`, 테스트 이름은 한국어)을 확인했습니다. 이렇게 진행하겠습니다.\n\n✅ `src/services/alerts.ts`에 `findAlerts()`를 새로 만듭니다\n✅ `sensors.ts`의 TODO 자리에 경보 라우트를 넣습니다\n✅ `test/alerts.test.ts`를 만들고 테스트를 돌려 확인합니다"

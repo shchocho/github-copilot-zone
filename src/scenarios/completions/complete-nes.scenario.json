@@ -1,0 +1,149 @@
+{
+  "id": "complete-nes",
+  "track": "completions",
+  "order": 2,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "필드 이름을 바꾸면 다음 고칠 곳을 알려 주는 다음 편집 제안",
+  "summary": "필드 이름 하나를 바꾸면 같은 파일에서 그 이름을 쓰는 곳을 다음 편집 제안(NES)이 차례로 짚어 줍니다. Tab으로 이동하고 Tab으로 수락합니다.",
+  "before": "이름을 바꾼 뒤 파일을 위아래로 훑으며 옛 이름이 남은 곳을 찾아 하나씩 고칩니다. 하나라도 놓치면 빌드가 깨집니다.",
+  "hook": "한 곳을 고치면 Copilot이 다음에 고칠 곳을 예측해 여백에 화살표로 보여 줍니다. Tab 두 번이면 이동하고 수락합니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "refactor/celsius-field",
+    "chat": false,
+    "tree": [
+      ".github/copilot-instructions.md",
+      "src/app.ts",
+      "src/routes/sensors.ts",
+      "src/services/alerts.ts",
+      "src/services/readings.ts",
+      "src/types.ts",
+      "test/readings.test.ts",
+      "package.json",
+      "README.md"
+    ]
+  },
+  "scene": {
+    "eyebrow": "오늘 11:30 · 코드 리뷰 반영",
+    "art": "dev-review",
+    "artSlots": {
+      "파일": "readings.ts",
+      "강조": "temp: number;",
+      "메모": "단위가 이름에 드러나게",
+      "그림제목": "리뷰 코멘트",
+      "항목1": "temp → celsius",
+      "항목2": "사용처 모두 바꾸기",
+      "항목3": "놓치면 빌드 실패",
+      "배지": "리뷰 반영"
+    },
+    "headline": "이름 하나 바꿨을 뿐인데 ‹‹고칠 곳을 찾아다니기››",
+    "sub": "리뷰에서 temp 라는 필드 이름이 단위를 알 수 없다는 지적을 받았습니다. celsius 로 바꾸고 같은 파일의 사용처도 고쳐야 합니다.",
+    "points": [
+      { "icon": "docsearch", "scene": "옛 이름이 남은 곳 찾기", "say": "파일을 위아래로 훑어야 해요." },
+      { "icon": "alert", "scene": "하나만 놓쳐도 빌드 실패", "say": "타입 오류가 나서 다시 찾아다녀요." },
+      { "icon": "refresh", "scene": "같은 수정을 반복", "say": "같은 바꾸기를 여러 줄에 손으로 해요." }
+    ]
+  },
+  "overview": [
+    { "icon": "code", "title": "한 곳 고치기", "desc": "인터페이스의 필드 이름을 temp 에서 celsius 로 바꿉니다." },
+    { "icon": "target", "title": "다음 편집 제안", "desc": "같은 이름을 쓰는 줄 옆 여백에 화살표가 뜨고, 바꿀 내용이 미리 보입니다." },
+    { "icon": "send", "title": "Tab으로 이동", "desc": "Tab을 누르면 커서가 제안 위치로 갑니다." },
+    { "icon": "check", "title": "Tab으로 수락", "desc": "한 번 더 Tab을 누르면 바뀌고, 다음 제안으로 이어집니다." }
+  ],
+  "workbench": {
+    "task": "필드 이름 바꾸기",
+    "artifacts": {
+      "readings": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "readings.ts",
+        "where": "src/services",
+        "code": {
+          "path": "src/services/readings.ts",
+          "touched": "r1",
+          "lines": [
+            { "t": "export interface Reading {" },
+            { "t": "  sensorId: string;" },
+            { "t": "  temp: number;", "cursor": true, "not": ["r1"] },
+            { "t": "  celsius: number;", "cursor": true, "only": ["r1"], "not": ["j1"] },
+            { "t": "  celsius: number;", "only": ["j1"] },
+            { "t": "  at: string;" },
+            { "t": "}" },
+            { "t": "" },
+            { "t": "/** 측정값 평균(소수점 첫째 자리). 값이 없으면 0 */" },
+            { "t": "export function average(rows: Reading[]): number {" },
+            { "t": "  if (!rows.length) return 0;" },
+            { "t": "  const sum = rows.reduce((acc, r) => acc + r.temp, 0);", "not": ["s1"] },
+            { "t": "  const sum = rows.reduce((acc, r) => acc + r.temp, 0);", "nes": { "from": "r.temp", "to": "r.celsius", "flag": "a1" }, "only": ["s1"], "not": ["j1"] },
+            { "t": "  const sum = rows.reduce((acc, r) => acc + r.temp, 0);", "nes": { "from": "r.temp", "to": "r.celsius", "flag": "a1" }, "cursor": true, "only": ["j1"], "not": ["j2"] },
+            { "t": "  const sum = rows.reduce((acc, r) => acc + r.celsius, 0);", "only": ["j2"] },
+            { "t": "  return Math.round((sum / rows.length) * 10) / 10;" },
+            { "t": "}" },
+            { "t": "" },
+            { "t": "/** 가장 높은 측정값 */" },
+            { "t": "export function hottest(rows: Reading[]): Reading | undefined {" },
+            { "t": "  return rows.reduce<Reading | undefined>((max, r) => (!max || r.temp > max.temp ? r : max), undefined);", "not": ["s2"] },
+            { "t": "  return rows.reduce<Reading | undefined>((max, r) => (!max || r.temp > max.temp ? r : max), undefined);", "nes": { "from": "r.temp > max.temp", "to": "r.celsius > max.celsius", "flag": "a2" }, "only": ["s2"], "not": ["j2"] },
+            { "t": "  return rows.reduce<Reading | undefined>((max, r) => (!max || r.temp > max.temp ? r : max), undefined);", "nes": { "from": "r.temp > max.temp", "to": "r.celsius > max.celsius", "flag": "a2" }, "cursor": true, "only": ["j2"] },
+            { "t": "}" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    { "role": "tool", "tool": "`src/services/readings.ts` 열기", "opens": "readings", "delayMs": 300 },
+    {
+      "role": "cue",
+      "text": "리뷰 의견대로 Reading 의 temp 필드를 celsius 로 바꿉니다. 커서가 있는 줄의 이름을 고쳐 볼까요?",
+      "action": "celsius로 고치기"
+    },
+    { "role": "tool", "tool": "temp → celsius 입력", "sets": "r1", "delayMs": 500 },
+    { "role": "tool", "tool": "다음 편집 제안", "sets": "s1", "delayMs": 1200 },
+    {
+      "role": "cue",
+      "text": "아래 sum 계산 줄 왼쪽 여백에 화살표가 생겼습니다. 다음 편집 제안입니다. 여기도 r.temp 를 쓰고 있어요. Tab을 누르면 그 줄로 이동합니다.",
+      "action": "이동 / 수락",
+      "target": "tab"
+    },
+    { "role": "tool", "tool": "제안 위치로 이동", "sets": "j1", "delayMs": 300 },
+    {
+      "role": "cue",
+      "text": "제안 위치로 왔습니다. 바뀔 내용(r.celsius)이 옆에 보입니다. Tab을 한 번 더 누르면 수락합니다.",
+      "action": "이동 / 수락",
+      "target": "tab"
+    },
+    { "role": "tool", "tool": "제안 수락", "sets": "a1", "delayMs": 300 },
+    { "role": "tool", "tool": "다음 편집 제안", "sets": "s2", "delayMs": 1000 },
+    {
+      "role": "cue",
+      "text": "곧바로 다음 제안이 hottest() 줄에 떴습니다. 한 줄에 두 군데를 함께 바꿉니다. Tab으로 이동해 볼까요?",
+      "action": "이동 / 수락",
+      "target": "tab"
+    },
+    { "role": "tool", "tool": "제안 위치로 이동", "sets": "j2", "delayMs": 300 },
+    {
+      "role": "cue",
+      "text": "Tab을 한 번 더 누르면 수락합니다.",
+      "action": "이동 / 수락",
+      "target": "tab"
+    },
+    { "role": "tool", "tool": "제안 수락", "sets": "a2", "delayMs": 300 }
+  ],
+  "recap": [
+    { "icon": "code", "name": "한 곳만 고쳤습니다", "desc": "필드 이름 하나를 바꾸자 나머지 사용처를 Copilot이 찾아 제안했습니다." },
+    { "icon": "target", "name": "다음 편집 제안", "desc": "여백의 화살표와 미리 보기로 어디를 어떻게 바꿀지 먼저 확인했습니다." },
+    { "icon": "check", "name": "Tab 두 번", "desc": "Tab으로 이동하고 Tab으로 수락해 두 군데를 고쳤습니다." }
+  ],
+  "finish": {
+    "sub": "필드 이름을 celsius 로 바꾸고, 다음 편집 제안이 짚어 준 두 사용처를 Tab으로 이동 · 수락해 마무리했습니다.",
+    "outs": [
+      { "app": "vscode", "name": "src/services/readings.ts", "note": "temp → celsius (3곳)" }
+    ]
+  },
+  "anonymized": true
+}

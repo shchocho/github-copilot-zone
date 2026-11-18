@@ -38,6 +38,20 @@ export const L = {
   allowOnce: '한 번 허용', // chatToolConfirmationSubPart 'Allow Once'
   skip: '건너뛰기', // runInTerminalTool 'Skip'
   showOutput: '출력 표시', // chatTerminalToolProgressPart
+  read: (file: string) => `Read ${file}`, // chatToolGroupSummary 'Read {0}' — 번역 없음
+  input: '입력', // chatToolConfirmationSubPart 'Input'
+
+  /* MCP 도구 (mcpLanguageModelToolContribution) — 읽기 전용 도구는 확인 없이 실행된다 */
+  mcpRun: (tool: string) => `${tool} 실행`, // 'Run {0}' (확인 제목) · 'Ran {0}' (실행 후)
+  mcpServer: (server: string) => `${server}(MCP 서버)`, // '{0} (MCP Server)'
+
+  /* 계획 검토 카드 (chatPlanReviewPart · reviewPlanTool). Implement Plan · Approve Plan Only 는 에이전트가 넘기는 동작 이름(영어) */
+  planSummary: 'Plan summary', // reviewPlanTool.defaultTitle — 번역 없음
+  openFullPlan: 'Open Full Plan', // 번역 없음
+  submitFeedback: 'Submit Feedback', // 번역 없음
+  reject: '거부', // chat.planReview.reject
+  implementPlan: 'Implement Plan', // 문서: code.visualstudio.com/docs/agents/run/planning
+  approvePlanOnly: 'Approve Plan Only',
 
   /* 편집 검토 (chatSessionWorkingSet · chatEditingEditorOverlay · chatEditingActions) */
   filesChanged: (n: number) => (n === 1 ? '1 file changed' : `${n} files changed`), // 번역 없음

@@ -232,6 +232,18 @@
 .vsc-confirm-note { margin: 0 0 8px; color: var(--vsc-muted); font-size: 12.5px; }
 .vsc-confirm-btns { display: flex; gap: 6px; }
 .vsc-confirm .vsc-btn { height: 26px; }
+/* MCP 도구 확인 · 계획 검토 카드 */
+.vsc-confirm-sub { margin: -4px 0 8px 22px; font-size: 12px; color: var(--vsc-muted); }
+.vsc-confirm-h { margin: 0 0 4px; font-size: 12px; color: var(--vsc-muted); }
+.vsc-confirm-note.is-warn { font-size: 12px; }
+.vsc-plan { margin: 0 0 10px; padding: 0 0 0 4px; list-style: none; counter-reset: step; }
+.vsc-plan li { display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 4px; margin: 0 0 6px; font-size: 12.5px; line-height: 1.5; counter-increment: step; }
+.vsc-plan li::before { content: counter(step) "."; color: var(--vsc-muted); }
+.vsc-plan li b { grid-column: 2; font-weight: 600; }
+.vsc-plan li b + * , .vsc-plan li { color: var(--vsc-fg); }
+.vsc-plan-links { display: flex; gap: 6px; margin: 0 0 8px; }
+.vsc-plan-links .vsc-btn { height: 24px; background: transparent; border-color: #3c3c3c; }
+.vsc-confirm.is-plan .vsc-confirm-btns { flex-wrap: wrap; }
 /* 셸의 승인 단추 모양(.wb-perm .wb-perm-b)을 VS Code 단추로 되돌린다 */
 .vsc-confirm .wb-perm-b { padding: 0 10px; font-size: 12.5px; font-weight: 400; color: var(--vsc-fg); background: var(--vsc-input); border: 1px solid transparent; border-radius: 2px; }
 .vsc-confirm .wb-perm-b.is-go { align-items: center; padding: 0 0 0 10px; color: #fff; background: var(--vsc-accent); border-color: transparent; }

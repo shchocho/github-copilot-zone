@@ -245,6 +245,8 @@ export interface MsgApprove extends Filterable {
   allowed?: string;
   denied?: string;
   mail?: { to: string; subject: string; body: string[]; sign?: string };
+  /** VS Code 확인 카드의 둘째 줄 (MCP 도구: '{서버}(MCP 서버)') */
+  sub?: string;
 }
 export interface MsgChoice extends Filterable {
   role: 'choice'; key: string; tag?: string; text: string; options: ChoiceOption[]; act?: string; builds?: string;

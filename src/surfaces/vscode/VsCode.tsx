@@ -403,29 +403,54 @@ function Terminal({ art, writing, ids, repo }: { art: Artifact; writing: number 
   );
 }
 
-/** 터미널 명령 실행 확인 카드 (채팅 안). 단추 이름은 runInTerminalTool 의 허용 · 건너뛰기 */
+/**
+ * 채팅 안의 확인 카드. kind 로 세 가지:
+ * - 기본(터미널 명령): runInTerminalTool 의 '{명령}' 명령을 실행하시겠습니까? · 허용 · 건너뛰기 (rows[0].value = 명령)
+ * - 'mcp': MCP 도구 실행 확인 — what 은 'Run {0}' 제목, rows 는 도구 입력, line 은 도구 설명, warn 은 경고 문구 · 한 번 허용 · 건너뛰기
+ * - 'plan': 계획 검토 카드(Plan summary) — rows 는 계획 단계 · Implement Plan · Approve Plan Only · 거부
+ */
 export function VsConfirm({ a, denied, onAllow, onDeny, onBack }: { a: MsgApprove; denied: boolean; onAllow: () => void; onDeny: () => void; onBack: () => void }) {
-  const cmd = a.rows?.[0]?.value;
+  const plan = a.kind === 'plan';
+  const mcp = a.kind === 'mcp';
+  const cmd = !plan && !mcp ? a.rows?.[0]?.value : undefined;
   if (denied) {
     return (
       <div className="wb-perm vsc-confirm is-denied" role="status">
-        <p className="vsc-confirm-t">{a.what}</p>
+        <p className="vsc-confirm-t">{plan ? L.planSummary : a.what}</p>
         <p className="vsc-confirm-note">{a.denied ?? '건너뛰었습니다.'}</p>
         <div className="vsc-confirm-btns"><button type="button" className="wb-perm-b vsc-btn" onClick={onBack}>다시 보기</button></div>
       </div>
     );
   }
   return (
-    <div className="wb-perm vsc-confirm" role="dialog" aria-label={a.what}>
-      <p className="vsc-confirm-t">{ci('terminal')}{a.what}</p>
+    <div className={`wb-perm vsc-confirm${plan ? ' is-plan' : ''}`} role="dialog" aria-label={plan ? L.planSummary : a.what}>
+      <p className="vsc-confirm-t">{ci(plan ? 'checklist' : mcp ? 'tools' : 'terminal')}{plan ? L.planSummary : a.what}</p>
+      {a.sub && <p className="vsc-confirm-sub">{a.sub}</p>}
+      {plan && a.line && <p className="vsc-confirm-note">{a.line}</p>}
+      {plan && <ol className="vsc-plan">{(a.rows ?? []).map((r, i) => <li key={i}><b>{r.label}</b>{r.value}</li>)}</ol>}
+      {mcp && a.line && <p className="vsc-confirm-note">{a.line}</p>}
+      {mcp && !!a.rows?.length && (
+        <>
+          <p className="vsc-confirm-h">{L.input}</p>
+          <pre className="vsc-confirm-cmd">{toolInput(a.rows)}</pre>
+        </>
+      )}
       {cmd && <pre className="vsc-confirm-cmd">{cmd}</pre>}
-      {a.line && <p className="vsc-confirm-note">{a.line}</p>}
+      {!plan && !mcp && a.line && <p className="vsc-confirm-note">{a.line}</p>}
+      {mcp && a.warn && <p className="vsc-confirm-note is-warn">{a.warn}</p>}
+      {plan && <p className="vsc-plan-links"><span className="vsc-btn">{ci('go-to-file')}{L.openFullPlan}</span><span className="vsc-btn">{L.submitFeedback}</span></p>}
       <div className="vsc-confirm-btns">
-        <button type="button" className="wb-perm-b is-go vsc-btn is-primary" onClick={onAllow}>{a.go ?? L.allow}<span className="vsc-split">{ci('chevron-down')}</span></button>
-        <button type="button" className="wb-perm-b vsc-btn" onClick={onDeny}>{L.skip}</button>
+        <button type="button" className="wb-perm-b is-go vsc-btn is-primary" onClick={onAllow}>{a.go ?? (plan ? L.implementPlan : mcp ? L.allowOnce : L.allow)}{!plan && <span className="vsc-split">{ci('chevron-down')}</span>}</button>
+        {plan && <span className="vsc-btn">{L.approvePlanOnly}</span>}
+        <button type="button" className="wb-perm-b vsc-btn" onClick={onDeny}>{plan ? L.reject : L.skip}</button>
       </div>
     </div>
   );
+}
+
+/** MCP 도구 입력을 JSON 모양으로 (숫자는 따옴표 없이) */
+function toolInput(rows: { label: string; value: string }[]) {
+  return JSON.stringify(Object.fromEntries(rows.map(r => [r.label, /^\d+$/.test(r.value) ? Number(r.value) : r.value])), null, 2);
 }
 
 /** 채팅의 도구 실행 줄: 끝나면 ✓, 진행 중이면 돌아가는 아이콘. `백틱` 은 코드 글꼴 */
@@ -433,7 +458,7 @@ export function VsStep({ text, active }: { text: string; active: boolean }) {
   return (
     <div className={`vsc-step${active ? ' is-now' : ''}`}>
       {active ? ci('loading', 'codicon-modifier-spin') : ci('check')}
-      <span>{(active ? text.replace(/ 실행됨$/, ' 실행 중') : text).split(/(`[^`]+`)/).map((x, i) => (x.startsWith('`') ? <code key={i}>{x.slice(1, -1)}</code> : x))}</span>
+      <span>{(active ? text.replace(/ 실행(됨)?$/, ' 실행 중') : text).split(/(`[^`]+`)/).map((x, i) => (x.startsWith('`') ? <code key={i}>{x.slice(1, -1)}</code> : x))}</span>
     </div>
   );
 }
