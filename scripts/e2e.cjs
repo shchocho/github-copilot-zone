@@ -10,8 +10,8 @@ const scen = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'src', 'scena
 fs.mkdirSync(OUT, { recursive: true });
 
 (async () => {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 });
+  const browser = await chromium.launch(process.env.PW_CHROME ? { executablePath: process.env.PW_CHROME } : {}); // PW_CHROME: 설치된 브라우저 판이 playwright 와 다를 때
+  const page = await browser.newPage({ viewport: { width: +(process.env.W || 1600), height: +(process.env.H || 900) }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text().slice(0, 200)); });
   page.on('pageerror', e => errors.push('PAGEERROR ' + String(e).slice(0, 300)));
@@ -89,7 +89,7 @@ fs.mkdirSync(OUT, { recursive: true });
     if (!acted && sig === lastSig) idle++; else idle = 0;
     lastSig = sig;
     if (idle > 25) { await snap('STALL'); break; }
-    if (log.length && log.length % 12 === 0 && acted) await snap('progress');
+    if (log.length && log.length % +(process.env.SNAP_EVERY || 12) === 0 && acted) await snap('progress'); // SNAP_EVERY=1 이면 단계마다
   }
   if (done) { await page.waitForTimeout(1200); await snap('done'); }
   const doneText = done ? (await page.locator('.sc-done-head').innerText()).replace(/\s+/g, ' ') : '';

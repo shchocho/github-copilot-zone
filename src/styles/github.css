@@ -144,6 +144,9 @@
 .gh-panel .sc-answer { font-size: 13px; line-height: 1.55; }
 .gh-panel .sc-answer-body > p { margin: 0 0 6px; white-space: pre-line; }
 .gh-panel .sc-answer-acts { display: none; }
+.gh-panel :is(.sc-answer-body p, .sc-check li) { font-size: inherit; line-height: inherit; letter-spacing: 0; }
+.gh-panel .sc-answer-body p + p { margin-top: 0; }
+.gh-panel .sc-check li { gap: 6px; }
 .gh-panel .cwr-hold { outline: 1px dashed #0969daaa; outline-offset: 6px; border-radius: 4px; }
 
 /* Assign to Copilot 창 */

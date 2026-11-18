@@ -162,7 +162,7 @@
         "app": "vscode",
         "kind": "term",
         "origin": "made",
-        "name": "터미널",
+        "name": "테스트 1차 실행",
         "where": "pwsh",
         "term": {
           "lines": [
@@ -186,7 +186,7 @@
         "app": "vscode",
         "kind": "term",
         "origin": "made",
-        "name": "터미널",
+        "name": "테스트 2차 실행",
         "where": "pwsh",
         "term": {
           "lines": [
@@ -220,7 +220,7 @@
     { "role": "tool", "tool": "`.github/copilot-instructions.md` 읽기", "delayMs": 600 },
     {
       "role": "assistant",
-      "text": "팀 규칙(**응답은 `{ data }` 형식, 없는 센서는 404 `SENSOR_NOT_FOUND`, 테스트 이름은 한국어**)을 확인했습니다. 이렇게 진행하겠습니다.\n\n✅ `src/services/alerts.ts`에 `findAlerts()`를 새로 만듭니다\n✅ `sensors.ts`의 TODO 자리에 경보 라우트를 넣습니다\n✅ `test/alerts.test.ts`를 만들고 테스트를 돌려 확인합니다"
+      "text": "**팀 규칙**(응답은 `{ data }` 형식, 없는 센서는 404 `SENSOR_NOT_FOUND`, 테스트 이름은 한국어)을 확인했습니다. 이렇게 진행하겠습니다.\n\n✅ `src/services/alerts.ts`에 `findAlerts()`를 새로 만듭니다\n✅ `sensors.ts`의 TODO 자리에 경보 라우트를 넣습니다\n✅ `test/alerts.test.ts`를 만들고 테스트를 돌려 확인합니다"
     },
     { "role": "tool", "tool": "`src/services/alerts.ts` 편집됨", "writes": "alerts", "sets": "e1", "delayMs": 500 },
     { "role": "tool", "tool": "`src/routes/sensors.ts` 편집됨", "opens": "routes", "sets": "route", "delayMs": 900 },
@@ -254,7 +254,7 @@
     },
     {
       "role": "cue",
-      "text": "편집기와 채팅 아래 목록에서 바뀐 내용을 확인했다면, 채팅 입력란 위의 **Keep**을 눌러 받아들입니다.",
+      "text": "편집기와 채팅 아래 목록에서 바뀐 내용을 확인했다면, 채팅 입력란 위의 Keep을 눌러 받아들입니다.",
       "action": "Keep",
       "target": "keep"
     },

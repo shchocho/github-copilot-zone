@@ -4,7 +4,7 @@
  * 편집기(탭 · 이동 경로 · 코드) · 패널(터미널) · 보조 사이드바(채팅) · 상태 표시줄. 테마는 기본값인 Dark Modern.
  * 문구 출처: ./labels.ts, 조사 기록: docs/UI-SOURCES.md
  */
-import { useEffect, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import type { Artifact, CodeFile, CodeLine, MsgApprove, PlayState, Scenario, TermLine } from '../../types';
 import type { Mark } from '../../components/chrome';
 import { filterBy } from '../../engine/text';
@@ -60,7 +60,9 @@ export function VsCodeWindow({ s, st, ids, mark, ask, onSend, target, onAct, str
 
   const status = (path: string) => {
     const hit = codes.find(([, a]) => a.code?.path === path);
-    return hit ? fileState(hit[1].code!, ids, st.opened.includes(hit[0]) || hit[1].origin === 'read') : '';
+    if (!hit) return '';
+    const shown = st.opened.includes(hit[0]) || hit[1].origin === 'read';
+    return hit[1].code!.added && !shown ? 'none' : fileState(hit[1].code!, ids, shown);
   };
   const activeArt = activeId ? s.workbench!.artifacts[activeId] : undefined;
   const activePath = activeArt?.code?.path;
@@ -80,7 +82,7 @@ export function VsCodeWindow({ s, st, ids, mark, ask, onSend, target, onAct, str
         <nav className="vsc-act" aria-label="작업 표시줄">
           {([['files', L.explorer, 'explorer'], ['search', L.search, ''], ['source-control', L.scm, 'scm'], ['debug-alt', L.run, ''], ['extensions', L.extensions, '']] as const).map(([icon, name, view]) => {
             const on = (vs.view ?? 'explorer') === view;
-            const badge = view === 'scm' ? (vs.scm ? (vs.scm.done && ids.includes(vs.scm.done) ? 0 : vs.scm.changes.length) : vs.tree.filter(p => status(p)).length) : 0;
+            const badge = view === 'scm' ? (vs.scm ? (vs.scm.done && ids.includes(vs.scm.done) ? 0 : vs.scm.changes.length) : vs.tree.filter(p => status(p) && status(p) !== 'none').length) : 0;
             return <span key={icon} className={on ? 'on' : undefined} title={name}>{ci(icon)}{badge > 0 && <b>{badge}</b>}</span>;
           })}
           <span className="vsc-act-end" title="계정">{ci('account')}</span>
@@ -207,6 +209,7 @@ function Explorer({ vs, active, status }: { vs: NonNullable<Scenario['vscode']>;
   type Node = { name: string; path: string; dirs: Map<string, Node>; files: string[] };
   const root: Node = { name: '', path: '', dirs: new Map(), files: [] };
   for (const p of vs.tree) {
+    if (status(p) === 'none') continue; // 에이전트가 아직 만들지 않은 새 파일
     const parts = p.split('/');
     let n = root;
     parts.slice(0, -1).forEach((d, i) => {
@@ -218,7 +221,7 @@ function Explorer({ vs, active, status }: { vs: NonNullable<Scenario['vscode']>;
   const rows: ReactNode[] = [];
   const walk = (n: Node, depth: number) => {
     for (const d of [...n.dirs.values()].sort((a, b) => a.name.localeCompare(b.name))) {
-      const st = vs.tree.some(p => p.startsWith(d.path + '/') && status(p)) ? 'dot' : '';
+      const st = vs.tree.some(p => p.startsWith(d.path + '/') && status(p) && status(p) !== 'none') ? 'dot' : '';
       rows.push(<li key={d.path} style={{ '--d': depth } as React.CSSProperties} className={st ? 'is-dot' : undefined}>{ci('chevron-down')}{d.name}</li>);
       walk(d, depth + 1);
     }
@@ -383,10 +386,12 @@ function InlineChatWidget({ text, edited, hot, onAct }: { text: string; edited: 
 function Terminal({ art, writing, ids, repo }: { art: Artifact; writing: number | null; ids: string[]; repo: string }) {
   const all = filterBy(art.term?.lines ?? [], ids) as TermLine[];
   const lines = writing == null ? all : all.slice(0, writing);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (box.current) box.current.scrollTop = box.current.scrollHeight; }, [lines.length]); // 실제 터미널처럼 마지막 줄을 보인다
   return (
     <section className="vsc-panel" aria-label={L.terminal}>
       <header>{L.panelTabs.map(t => <i key={t} className={t === L.terminal ? 'on' : undefined}>{t}</i>)}<span>{ci('terminal-powershell')}{art.term?.title ?? 'pwsh'}{ci('add')}{ci('trash')}{ci('chevron-up')}{ci('close')}</span></header>
-      <div className="vsc-term">
+      <div className="vsc-term" ref={box}>
         {lines.map((l, i) => (
           <p key={i} className={l.tone ? `is-${l.tone}` : undefined}>
             {l.tone === 'cmd' ? <><span className="vsc-ps">PS D:\{repo}&gt;</span> {l.t}</> : l.t || '\u00a0'}
@@ -428,7 +433,7 @@ export function VsStep({ text, active }: { text: string; active: boolean }) {
   return (
     <div className={`vsc-step${active ? ' is-now' : ''}`}>
       {active ? ci('loading', 'codicon-modifier-spin') : ci('check')}
-      <span>{text.split(/(`[^`]+`)/).map((x, i) => (x.startsWith('`') ? <code key={i}>{x.slice(1, -1)}</code> : x))}</span>
+      <span>{(active ? text.replace(/ 실행됨$/, ' 실행 중') : text).split(/(`[^`]+`)/).map((x, i) => (x.startsWith('`') ? <code key={i}>{x.slice(1, -1)}</code> : x))}</span>
     </div>
   );
 }

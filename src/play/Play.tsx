@@ -281,7 +281,7 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
                 </Tip>
               )}
               {holdAt === null && p.approve && (
-                <Tip zone=".wb-perm"><Bubble q={'실행하기 전에 사람에게 한 번 확인합니다.\n확인하고 이상이 없다면 승인을 눌러주세요.'} /></Tip>
+                <Tip zone=".wb-perm"><Bubble q={`실행하기 전에 사람에게 한 번 확인합니다.\n확인하고 이상이 없다면 ${s.agent === 'vscode' ? p.approve.go ?? '허용' : '승인'}을 눌러주세요.`} /></Tip>
               )}
               {holdAt === null && p.choice && (
                 <Tip>

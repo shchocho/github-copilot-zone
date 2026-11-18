@@ -88,6 +88,7 @@ const LETTER: Record<string, [string, string]> = {
 export function AppIcon({ app }: { app: string }) {
   if (app === 'chat') return <img className="wb-fico is-logo" src="logo/copilot/copilot.png" alt="" aria-hidden="true" />;
   if (isApp(app) && app !== 'onenote') return <img className="wb-fico is-logo" src={APP_LOGO[app]} alt="" aria-hidden="true" />;
+  if (app === 'vscode' || app === 'github') return <span className="wb-fico" style={{ background: app === 'vscode' ? '#0078d4' : '#24292f' }} aria-hidden="true"><i className={`codicon codicon-${app}`} /></span>;
   const [ch, bg] = LETTER[app] ?? ['•', '#8a8886'];
   return <span className="wb-fico" style={{ background: bg }} aria-hidden="true">{ch}</span>;
 }
