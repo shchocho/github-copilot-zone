@@ -208,7 +208,7 @@ export function DoneStage({ s, st, vars, completed }: { s: Scenario; st: PlaySta
           <h2>
             {completed
               ? <><ProductName product={product} /><span>{withParticle(product)} 함께</span></>
-              : <><img src="logo/copilot/copilot-lockup-horiz.png" alt="Microsoft Copilot" /><span>체험 미완료</span></>}
+              : <><ProductName product={product} /><span>체험 미완료</span></>}
           </h2>
           <p>{completed ? s.finish?.sub ?? s.hook ?? s.summary : '체험을 끝까지 진행하지 않았습니다.'}</p>
         </div>
