@@ -1,0 +1,127 @@
+{
+  "id": "inline-chat",
+  "track": "chat",
+  "order": 2,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "Ctrl+I 인라인 채팅으로 그 자리에서 입력 검증 추가",
+  "summary": "편집기에서 Ctrl+I로 인라인 채팅을 열고 한 문장으로 요청하면, 그 자리에 바뀐 코드가 표시되고 유지 · 실행 취소로 고릅니다.",
+  "before": "채팅 창으로 옮겨 가 코드를 붙여 넣고 질문한 뒤, 답의 코드를 다시 복사해 제자리에 붙입니다.",
+  "hook": "커서가 있는 자리에서 바로 요청하고, 바뀐 줄을 편집기 안에서 확인한 뒤 유지합니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "fix/readings-limit",
+    "chat": false,
+    "tree": [
+      ".github/copilot-instructions.md",
+      "src/app.ts",
+      "src/routes/readings.ts",
+      "src/routes/sensors.ts",
+      "src/services/readings.ts",
+      "src/types.ts",
+      "test/readings.test.ts",
+      "package.json",
+      "README.md"
+    ]
+  },
+  "scene": {
+    "eyebrow": "오늘 16:20 · 장애 회고 후속",
+    "art": "dev-issue",
+    "artSlots": {
+      "파일": "readings.ts",
+      "강조": "Number(req.query.limit ?? 50)",
+      "메모": "limit=100000 이 그대로 들어감",
+      "그림제목": "회고 후속 조치",
+      "항목1": "limit 상한 두기",
+      "항목2": "잘못된 값은 400",
+      "항목3": "오늘 배포 전 반영",
+      "배지": "후속 조치"
+    },
+    "headline": "한 줄짜리 검증인데 ‹‹창을 오가며 복사 · 붙여넣기››",
+    "sub": "어제 장애 회고에서 측정값 조회 API가 limit 값을 검사하지 않아 DB가 느려졌다는 원인이 나왔습니다. 상한을 두고 잘못된 값은 거절해야 합니다.",
+    "points": [
+      { "icon": "alert", "scene": "검사 없는 입력값", "say": "limit=100000 같은 요청이 그대로 DB로 갔어요." },
+      { "icon": "split", "scene": "창을 오가는 수정", "say": "채팅에 붙여 넣고, 답을 다시 복사해 와요." },
+      { "icon": "checkdoc", "scene": "팀 응답 형식", "say": "오류 응답은 { error: 코드 } 형식이어야 해요." }
+    ]
+  },
+  "overview": [
+    { "icon": "code", "title": "그 자리에서 열기", "desc": "고칠 줄에 커서를 두고 Ctrl+I로 인라인 채팅을 엽니다." },
+    { "icon": "send", "title": "한 문장 요청", "desc": "무엇을 검사하고 어떻게 응답할지 적어 보냅니다." },
+    { "icon": "docsearch", "title": "바뀐 줄 확인", "desc": "추가 · 삭제된 줄이 편집기 안에 색으로 표시됩니다." },
+    { "icon": "check", "title": "유지 또는 실행 취소", "desc": "맞으면 유지, 아니면 실행 취소로 되돌립니다." }
+  ],
+  "workbench": {
+    "task": "입력 검증",
+    "artifacts": {
+      "route": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "readings.ts",
+        "where": "src/routes",
+        "code": {
+          "path": "src/routes/readings.ts",
+          "touched": "ed",
+          "kept": "kept",
+          "inline": { "at": 8, "text": "limit 은 1~500 사이 정수만 허용하고, 아니면 400 { error: 'INVALID_LIMIT' } 으로 응답해 줘", "on": "ic", "done": "kept" },
+          "lines": [
+            { "t": "import { Router } from 'express';" },
+            { "t": "import { latestReadings } from '../services/readings';" },
+            { "t": "" },
+            { "t": "export const readings = Router();" },
+            { "t": "" },
+            { "t": "// GET /api/readings/:id?limit=50" },
+            { "t": "readings.get('/:id', async (req, res) => {" },
+            { "t": "  const limit = Number(req.query.limit ?? 50);", "cursor": true },
+            { "t": "  if (!Number.isInteger(limit) || limit < 1 || limit > 500) {", "diff": "add", "only": ["ed"] },
+            { "t": "    return res.status(400).json({ error: 'INVALID_LIMIT' });", "diff": "add", "only": ["ed"] },
+            { "t": "  }", "diff": "add", "only": ["ed"] },
+            { "t": "  const rows = await latestReadings(req.params.id, limit);" },
+            { "t": "  if (!rows) return res.status(404).json({ error: 'SENSOR_NOT_FOUND' });" },
+            { "t": "  res.json({ data: rows });" },
+            { "t": "});" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    { "role": "tool", "tool": "`src/routes/readings.ts` 열기", "opens": "route", "delayMs": 300 },
+    {
+      "role": "cue",
+      "text": "limit 을 읽는 줄에 커서를 두었습니다. 이 자리에서 바로 인라인 채팅을 열어 볼까요?",
+      "action": "인라인 채팅 열기",
+      "target": "ctrl-i"
+    },
+    { "role": "tool", "tool": "인라인 채팅 열림", "sets": "ic", "delayMs": 300 },
+    {
+      "role": "cue",
+      "text": "편집기 안에 입력란이 열리고 요청을 적었습니다. 보내기를 눌러 보낼까요?",
+      "action": "보내기",
+      "target": "inline-send"
+    },
+    { "role": "tool", "tool": "`src/routes/readings.ts` 편집됨", "sets": "ed", "delayMs": 1600 },
+    {
+      "role": "cue",
+      "text": "초록색으로 표시된 세 줄이 추가됐습니다. 1~500 밖의 값과 정수가 아닌 값을 거절하고, 팀 형식대로 { error } 로 응답합니다. 맞으면 유지합니다.",
+      "action": "유지",
+      "target": "keep"
+    },
+    { "role": "tool", "tool": "변경 내용 유지", "sets": "kept", "delayMs": 300 }
+  ],
+  "recap": [
+    { "icon": "code", "name": "그 자리에서 요청", "desc": "Ctrl+I로 고칠 줄 바로 아래에서 인라인 채팅을 열었습니다." },
+    { "icon": "docsearch", "name": "편집기 안에서 확인", "desc": "추가된 세 줄을 색으로 보고 판단했습니다." },
+    { "icon": "check", "name": "유지로 반영", "desc": "복사 · 붙여넣기 없이 유지 한 번으로 코드에 넣었습니다." }
+  ],
+  "finish": {
+    "sub": "인라인 채팅으로 limit 입력 검증을 그 자리에서 추가하고, 바뀐 줄을 확인한 뒤 유지했습니다.",
+    "outs": [
+      { "app": "vscode", "name": "src/routes/readings.ts", "note": "limit 검증 · 400 INVALID_LIMIT" }
+    ]
+  },
+  "anonymized": true
+}

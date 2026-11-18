@@ -1,0 +1,140 @@
+{
+  "id": "chat-explain",
+  "track": "chat",
+  "order": 1,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "처음 보는 집계 코드를 Ask 에이전트에게 설명받기",
+  "summary": "파일을 컨텍스트로 붙이고 Ask 에이전트에게 물으면, 코드를 고치지 않고 단계별 설명과 예시 코드로 답합니다.",
+  "before": "인수인계받은 집계 코드를 한 줄씩 따라 읽고, 이해가 안 되는 부분은 작성자를 찾아가 묻습니다.",
+  "hook": "궁금한 파일을 붙여 묻기만 하면, 흐름 · 이유 · 예시까지 설명을 받고 이어서 질문할 수 있습니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "main",
+    "chat": true,
+    "agent": "Ask",
+    "context": ["src/services/aggregate.ts"],
+    "tree": [
+      ".github/copilot-instructions.md",
+      "src/app.ts",
+      "src/routes/sensors.ts",
+      "src/services/aggregate.ts",
+      "src/services/alerts.ts",
+      "src/services/readings.ts",
+      "src/types.ts",
+      "test/readings.test.ts",
+      "package.json",
+      "README.md"
+    ]
+  },
+  "scene": {
+    "eyebrow": "오늘 09:40 · 인수인계 첫날",
+    "art": "dev-docs",
+    "artSlots": {
+      "파일": "aggregate.ts",
+      "강조": "Math.floor(t / step) * step",
+      "메모": "이 줄은 왜 이렇게?",
+      "그림제목": "인수인계 문서",
+      "항목1": "aggregate.ts 담당",
+      "항목2": "작성자는 다른 팀으로",
+      "항목3": "다음 주 기능 추가",
+      "배지": "첫날"
+    },
+    "headline": "물려받은 코드인데 ‹‹이 줄이 왜 이런지 모르겠다››",
+    "sub": "다른 팀으로 옮긴 동료에게서 센서 측정값 집계 코드를 넘겨받았습니다. 다음 주에 기능을 붙여야 하는데 구간을 나누는 계산부터 낯섭니다.",
+    "points": [
+      { "icon": "docsearch", "scene": "한 줄씩 따라 읽기", "say": "변수 이름만으로는 의도가 안 보여요." },
+      { "icon": "people", "scene": "작성자에게 묻기", "say": "다른 팀 일에 바쁜 사람을 붙잡기 미안해요." },
+      { "icon": "alert", "scene": "잘못 이해하고 고치면", "say": "경계값에서 숫자가 틀어질까 걱정돼요." }
+    ]
+  },
+  "overview": [
+    { "icon": "link", "title": "파일 붙이기", "desc": "채팅 입력란에 aggregate.ts 를 컨텍스트로 붙입니다." },
+    { "icon": "send", "title": "Ask 에이전트에게 질문", "desc": "Ask 는 코드를 고치지 않고 설명과 답만 합니다." },
+    { "icon": "docsearch", "title": "단계별 설명", "desc": "흐름을 단계로 나누고, 헷갈리는 줄은 예시 숫자로 풀어 줍니다." },
+    { "icon": "refresh", "title": "이어서 질문", "desc": "답을 보고 생긴 궁금증을 같은 대화에서 다시 묻습니다." }
+  ],
+  "workbench": {
+    "task": "집계 코드 이해",
+    "artifacts": {
+      "agg": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "read",
+        "name": "aggregate.ts",
+        "where": "src/services",
+        "code": {
+          "path": "src/services/aggregate.ts",
+          "lines": [
+            { "t": "import type { Reading } from '../types';" },
+            { "t": "" },
+            { "t": "export interface Bucket { from: string; avg: number; max: number; count: number }" },
+            { "t": "" },
+            { "t": "export function bucketize(rows: Reading[], minutes = 15): Bucket[] {" },
+            { "t": "  const step = minutes * 60_000;" },
+            { "t": "  const groups = new Map<number, Reading[]>();" },
+            { "t": "  for (const r of rows) {" },
+            { "t": "    const t = Date.parse(r.at);" },
+            { "t": "    const key = Math.floor(t / step) * step;", "cursor": true },
+            { "t": "    groups.set(key, [...(groups.get(key) ?? []), r]);" },
+            { "t": "  }" },
+            { "t": "  return [...groups]" },
+            { "t": "    .sort(([a], [b]) => a - b)" },
+            { "t": "    .map(([key, list]) => ({" },
+            { "t": "      from: new Date(key).toISOString()," },
+            { "t": "      avg: Math.round(list.reduce((s, r) => s + r.value, 0) / list.length * 10) / 10," },
+            { "t": "      max: Math.max(...list.map(r => r.value))," },
+            { "t": "      count: list.length," },
+            { "t": "    }));" },
+            { "t": "}" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "오른쪽 채팅의 에이전트를 Ask 로 두고 aggregate.ts 를 컨텍스트로 붙였습니다. 질문을 보내 볼까요?",
+      "action": "보내기"
+    },
+    {
+      "role": "user",
+      "text": "이 집계 코드가 하는 일을 단계별로 설명해 줘. 특히 key 를 Math.floor(t / step) * step 으로 계산하는 이유가 궁금해."
+    },
+    { "role": "tool", "tool": "Read `src/services/aggregate.ts`", "delayMs": 700 },
+    {
+      "role": "assistant",
+      "text": "`bucketize()`는 측정값을 **일정한 시간 구간(기본 15분)으로 묶어** 구간마다 평균 · 최댓값 · 개수를 돌려줍니다.\n\n✅ **구간 길이 계산** — `step`은 15분을 밀리초로 바꾼 값(900,000)입니다\n✅ **구간 찾기** — 각 측정 시각을 구간의 시작 시각(`key`)으로 내림합니다\n✅ **묶기** — 같은 `key`끼리 `Map`에 모읍니다\n✅ **요약** — 시간순으로 정렬해 평균(소수점 첫째 자리) · 최댓값 · 개수를 만듭니다\n\n`Math.floor(t / step) * step`은 **시각을 구간 시작으로 내림**하는 식입니다. 예를 들어 10:07과 10:14는 모두 10:00 구간, 10:15는 다음 구간이 됩니다.\n\n```\n10:07 → floor(10:07 / 15분) * 15분 = 10:00\n10:14 → 10:00\n10:15 → 10:15   ← 경계 시각은 새 구간의 첫 값\n```"
+    },
+    {
+      "role": "cue",
+      "text": "답을 읽다 보니 측정값이 하나도 없는 구간은 어떻게 되는지 궁금해졌습니다. 이어서 물어볼까요?",
+      "action": "보내기"
+    },
+    {
+      "role": "user",
+      "text": "측정값이 없는 15분 구간은 결과에 어떻게 나와?"
+    },
+    {
+      "role": "assistant",
+      "text": "**결과에 아예 나오지 않습니다.** `groups`에는 측정값이 있는 구간만 들어가기 때문에, 센서가 10:15~10:30에 값을 보내지 않았다면 그 구간은 배열에서 빠지고 10:00 다음에 바로 10:30이 옵니다.\n\n차트에서 빈 구간을 0이나 빈칸으로 보여 줘야 한다면, 처음 구간부터 마지막 구간까지 `step`씩 돌면서 없는 `key`를 `count: 0`으로 채우는 단계가 필요합니다. 필요하면 **Agent**로 바꿔 그 처리를 추가하도록 맡길 수 있습니다."
+    }
+  ],
+  "recap": [
+    { "icon": "link", "name": "파일을 컨텍스트로", "desc": "aggregate.ts 를 붙여 그 코드에 대한 답을 받았습니다." },
+    { "icon": "docsearch", "name": "단계별 설명", "desc": "흐름을 네 단계로 나누고, 헷갈리던 내림 계산을 예시 시각으로 풀었습니다." },
+    { "icon": "refresh", "name": "이어서 질문", "desc": "빈 구간 처리처럼 답을 보고 생긴 궁금증을 같은 대화에서 해결했습니다." },
+    { "icon": "shield", "name": "코드는 그대로", "desc": "Ask 에이전트는 설명만 하고 파일을 고치지 않았습니다." }
+  ],
+  "finish": {
+    "sub": "Ask 에이전트에게 집계 코드의 흐름과 구간 계산의 이유를 설명받고, 빈 구간이 어떻게 처리되는지도 이어서 확인했습니다.",
+    "outs": [
+      { "app": "vscode", "name": "집계 흐름 4단계 설명", "note": "구간 · 묶기 · 요약" },
+      { "app": "vscode", "name": "빈 구간 처리 방법", "note": "이어서 질문" }
+    ]
+  },
+  "anonymized": true
+}

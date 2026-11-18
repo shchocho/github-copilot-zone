@@ -1,0 +1,119 @@
+{
+  "id": "commit-message",
+  "track": "chat",
+  "order": 3,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "바뀐 내용을 읽고 커밋 메시지까지 만들어 커밋",
+  "summary": "소스 제어 보기에서 반짝이 단추를 누르면 Copilot이 변경 내용을 읽고 커밋 메시지를 채웁니다. 확인한 뒤 커밋합니다.",
+  "before": "무엇을 바꿨는지 diff를 다시 훑으며 커밋 메시지를 고민하다가, 결국 \"fix\" 한 단어로 커밋합니다.",
+  "hook": "변경 내용을 요약한 커밋 메시지가 입력란에 채워지고, 사람은 읽어 보고 커밋만 누릅니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "fix/readings-limit",
+    "chat": false,
+    "view": "scm",
+    "scm": {
+      "changes": [
+        { "path": "src/routes/readings.ts", "st": "M" },
+        { "path": "test/readings.test.ts", "st": "M" }
+      ],
+      "msg": "fix(readings): validate limit query parameter\n\nReject non-integer limits and values outside 1-500 with\n400 INVALID_LIMIT, and add tests for the boundary values.",
+      "on": "gen",
+      "done": "done"
+    },
+    "tree": [
+      "src/routes/readings.ts",
+      "test/readings.test.ts"
+    ]
+  },
+  "scene": {
+    "eyebrow": "오늘 17:40 · 배포 전",
+    "art": "dev-commit",
+    "artSlots": {
+      "파일": "git log",
+      "강조": "fix",
+      "메모": "이게 뭘 고친 커밋이지?",
+      "그림제목": "지난주 커밋 기록",
+      "항목1": "fix",
+      "항목2": "wip",
+      "항목3": "수정",
+      "배지": "기록 정리"
+    },
+    "headline": "고치는 건 끝났는데 ‹‹커밋 메시지가 안 떠오른다››",
+    "sub": "limit 검증과 테스트를 마쳤습니다. 팀은 커밋 메시지 형식을 정해 두었지만, 퇴근 전이라 \"fix\" 한 단어로 올리고 싶은 마음이 듭니다.",
+    "points": [
+      { "icon": "docsearch", "scene": "무엇을 바꿨는지 다시 보기", "say": "diff를 다시 훑어야 메시지를 쓸 수 있어요." },
+      { "icon": "checkdoc", "scene": "팀 형식 맞추기", "say": "type(scope): 요약 형식을 매번 떠올려요." },
+      { "icon": "clock", "scene": "나중에 찾을 때", "say": "\"fix\"만 남은 기록은 아무도 못 알아봐요." }
+    ]
+  },
+  "overview": [
+    { "icon": "split", "title": "소스 제어 보기", "desc": "왼쪽 작업 표시줄에서 소스 제어를 열면 바뀐 파일이 보입니다." },
+    { "icon": "bolt", "title": "커밋 메시지 생성", "desc": "입력란 옆 반짝이 단추를 누르면 Copilot이 변경 내용을 읽습니다." },
+    { "icon": "checkdoc", "title": "메시지 확인", "desc": "요약 줄과 설명이 입력란에 채워집니다. 고칠 곳이 있으면 고칩니다." },
+    { "icon": "check", "title": "커밋", "desc": "커밋 단추로 커밋합니다. 메시지 생성은 커밋까지 대신 하지 않습니다." }
+  ],
+  "workbench": {
+    "task": "커밋",
+    "artifacts": {
+      "route": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "read",
+        "name": "readings.ts",
+        "where": "src/routes",
+        "code": {
+          "path": "src/routes/readings.ts",
+          "lines": [
+            { "t": "import { Router } from 'express';" },
+            { "t": "import { latestReadings } from '../services/readings';" },
+            { "t": "" },
+            { "t": "export const readings = Router();" },
+            { "t": "" },
+            { "t": "// GET /api/readings/:id?limit=50" },
+            { "t": "readings.get('/:id', async (req, res) => {" },
+            { "t": "  const limit = Number(req.query.limit ?? 50);" },
+            { "t": "  if (!Number.isInteger(limit) || limit < 1 || limit > 500) {" },
+            { "t": "    return res.status(400).json({ error: 'INVALID_LIMIT' });" },
+            { "t": "  }" },
+            { "t": "  const rows = await latestReadings(req.params.id, limit);", "cursor": true },
+            { "t": "  if (!rows) return res.status(404).json({ error: 'SENSOR_NOT_FOUND' });" },
+            { "t": "  res.json({ data: rows });" },
+            { "t": "});" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "소스 제어 보기에 바뀐 파일 두 개가 있습니다. 메시지 입력란 오른쪽의 반짝이 단추로 커밋 메시지를 만들어 볼까요?",
+      "action": "커밋 메시지 생성",
+      "target": "commit-msg"
+    },
+    { "role": "tool", "tool": "커밋 메시지 생성", "sets": "gen", "delayMs": 1800 },
+    {
+      "role": "cue",
+      "text": "바뀐 내용을 읽고 팀 형식(type(scope): 요약)에 맞춘 메시지가 채워졌습니다. 내용이 맞으면 커밋합니다.",
+      "action": "커밋",
+      "target": "commit"
+    },
+    { "role": "tool", "tool": "커밋", "sets": "done", "delayMs": 400 }
+  ],
+  "recap": [
+    { "icon": "bolt", "name": "단추 하나로 메시지", "desc": "반짝이 단추를 누르자 변경 내용을 요약한 메시지가 채워졌습니다." },
+    { "icon": "checkdoc", "name": "형식과 내용", "desc": "요약 줄은 팀 형식으로, 설명에는 무엇을 왜 바꿨는지 들어갔습니다." },
+    { "icon": "check", "name": "커밋은 사람이", "desc": "메시지를 확인한 뒤 커밋 단추를 직접 눌렀습니다." }
+  ],
+  "finish": {
+    "sub": "Copilot이 변경 내용을 읽고 만든 커밋 메시지를 확인한 뒤 커밋했습니다.",
+    "outs": [
+      { "app": "vscode", "name": "fix(readings): validate limit query parameter", "note": "커밋 1개 · 파일 2개" }
+    ]
+  },
+  "anonymized": true
+}
