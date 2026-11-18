@@ -1,0 +1,243 @@
+{
+  "id": "agent-mcp",
+  "track": "agent",
+  "order": 3,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "팀 규칙과 GitHub MCP 서버로 이슈를 읽고 처리까지",
+  "summary": "에이전트가 GitHub MCP 서버로 이슈 #151을 직접 읽고, 저장소의 팀 규칙(copilot-instructions.md)대로 코드를 고친 뒤 이슈에 처리 내용을 댓글로 남깁니다.",
+  "before": "브라우저에서 이슈를 열어 내용을 복사해 오고, 팀 규칙 문서를 다시 찾아 읽고, 끝나면 이슈에 돌아가 댓글을 씁니다.",
+  "hook": "이슈 번호만 말하면 에이전트가 MCP 도구로 이슈를 읽고, 팀 규칙을 지켜 고치고, 승인을 받아 이슈에 댓글까지 남깁니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "fix/151-mask-serial",
+    "chat": true,
+    "agent": "Agent",
+    "tree": [
+      ".github/copilot-instructions.md",
+      ".mcp.json",
+      "src/app.ts",
+      "src/routes/sensors.ts",
+      "src/services/firmwareLog.ts",
+      "src/services/readings.ts",
+      "src/types.ts",
+      "test/firmwareLog.test.ts",
+      "test/readings.test.ts",
+      "package.json",
+      "README.md"
+    ],
+    "edits": {
+      "files": ["src/services/firmwareLog.ts", "test/firmwareLog.test.ts"],
+      "on": "e1",
+      "kept": "kept",
+      "added": 15,
+      "removed": 1
+    }
+  },
+  "scene": {
+    "eyebrow": "오늘 13:30 · 보안 점검 지적",
+    "art": "dev-issue",
+    "artSlots": {
+      "파일": "firmwareLog.ts",
+      "강조": "serial: d.serial",
+      "메모": "시리얼이 로그에 그대로",
+      "그림제목": "이번 스프린트 할 일",
+      "항목1": "#142 센서 경보 API",
+      "항목2": "#147 대시보드 필터",
+      "항목3": "#151 펌웨어 로그 정리",
+      "배지": "보안 점검"
+    },
+    "headline": "작은 이슈 하나에도 ‹‹이슈 · 규칙 · 코드를 오가기››",
+    "sub": "보안 점검에서 펌웨어 업데이트 로그에 장비 시리얼 번호가 그대로 남는다는 지적이 나와 이슈 #151로 올라왔습니다. 팀 규칙에는 로그에 남길 수 있는 정보가 정해져 있습니다.",
+    "points": [
+      { "icon": "link", "scene": "이슈 내용 옮겨 오기", "say": "브라우저에서 이슈를 열어 복사해 와요." },
+      { "icon": "checkdoc", "scene": "팀 규칙 다시 찾기", "say": "로그에 무엇을 가려야 하는지 문서를 찾아봐요." },
+      { "icon": "mail", "scene": "처리 결과 알리기", "say": "끝나면 이슈에 돌아가 댓글을 써야 해요." }
+    ]
+  },
+  "overview": [
+    { "icon": "network", "title": "MCP 서버 연결", "desc": "사용자 지정 > MCP Servers 에 GitHub MCP 서버를 연결해 두었습니다." },
+    { "icon": "checkdoc", "title": "팀 규칙 자동 적용", "desc": ".github/copilot-instructions.md 의 규칙을 에이전트가 읽고 지킵니다." },
+    { "icon": "docsearch", "title": "이슈 직접 읽기", "desc": "issue_read 도구로 #151 내용을 가져옵니다(읽기 전용이라 확인 없이 실행)." },
+    { "icon": "code", "title": "고치고 테스트", "desc": "코드를 고치고, 승인받아 테스트를 돌립니다." },
+    { "icon": "shield", "title": "쓰기는 승인 뒤에", "desc": "이슈에 댓글을 다는 도구는 실행 전에 한 번 허용을 받습니다." }
+  ],
+  "workbench": {
+    "task": "이슈 #151",
+    "artifacts": {
+      "fw": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "read",
+        "name": "firmwareLog.ts",
+        "where": "src/services",
+        "code": {
+          "path": "src/services/firmwareLog.ts",
+          "kept": "kept",
+          "lines": [
+            { "t": "import { logger } from '../logger';" },
+            { "t": "import type { Device } from '../types';" },
+            { "t": "" },
+            { "t": "/** 시리얼은 뒤 4자리만 남긴다 (팀 규칙: 로그) */", "diff": "add", "only": ["fix"] },
+            { "t": "export const maskSerial = (s: string) => (s.length <= 4 ? s : '*'.repeat(s.length - 4) + s.slice(-4));", "diff": "add", "only": ["fix"] },
+            { "t": "", "diff": "add", "only": ["fix"] },
+            { "t": "export function logFirmwareUpdate(d: Device, version: string) {" },
+            { "t": "  logger.info('firmware.update', {" },
+            { "t": "    deviceId: d.id," },
+            { "t": "    serial: d.serial,", "cursor": true, "not": ["fix"] },
+            { "t": "    serial: d.serial,", "diff": "del", "only": ["fix"] },
+            { "t": "    serial: maskSerial(d.serial),", "diff": "add", "only": ["fix"] },
+            { "t": "    from: d.firmware," },
+            { "t": "    to: version," },
+            { "t": "  });" },
+            { "t": "}" }
+          ]
+        }
+      },
+      "rules": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "read",
+        "name": "copilot-instructions.md",
+        "where": ".github",
+        "code": {
+          "path": ".github/copilot-instructions.md",
+          "lines": [
+            { "t": "# sensor-hub 팀 규칙" },
+            { "t": "" },
+            { "t": "## API" },
+            { "t": "- 응답은 `{ data }`, 오류는 `{ error: 'UPPER_SNAKE_CODE' }` 형식" },
+            { "t": "- 없는 센서는 404 `SENSOR_NOT_FOUND`" },
+            { "t": "" },
+            { "t": "## 로그" },
+            { "t": "- 장비 시리얼 번호는 뒤 4자리만 남기고 `*` 로 가린다" },
+            { "t": "- 사용자 이메일 · 전화번호는 로그에 남기지 않는다" },
+            { "t": "" },
+            { "t": "## 테스트" },
+            { "t": "- vitest, 테스트 이름은 한국어로 동작을 설명한다" },
+            { "t": "- 고친 함수마다 경계값 테스트를 하나 이상 둔다" }
+          ]
+        }
+      },
+      "test": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "firmwareLog.test.ts",
+        "where": "test",
+        "code": {
+          "path": "test/firmwareLog.test.ts",
+          "added": true,
+          "kept": "kept",
+          "lines": [
+            { "t": "import { describe, it, expect } from 'vitest';", "diff": "add" },
+            { "t": "import { maskSerial } from '../src/services/firmwareLog';", "diff": "add" },
+            { "t": "", "diff": "add" },
+            { "t": "describe('maskSerial', () => {", "diff": "add" },
+            { "t": "  it('뒤 4자리만 남기고 가린다', () => {", "diff": "add" },
+            { "t": "    expect(maskSerial('NT2611A04217')).toBe('********4217');", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "  it('4자리 이하는 그대로 둔다', () => {", "diff": "add" },
+            { "t": "    expect(maskSerial('4217')).toBe('4217');", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "});", "diff": "add" }
+          ]
+        }
+      },
+      "run": {
+        "app": "vscode",
+        "kind": "term",
+        "origin": "made",
+        "name": "테스트 실행",
+        "where": "pwsh",
+        "term": {
+          "lines": [
+            { "t": "npm test -- firmwareLog", "tone": "cmd" },
+            { "t": "" },
+            { "t": "> sensor-hub@1.4.0 test", "tone": "dim" },
+            { "t": "> vitest run firmwareLog", "tone": "dim" },
+            { "t": "" },
+            { "t": " ✓ test/firmwareLog.test.ts (2 tests) 9ms", "tone": "ok" },
+            { "t": "" },
+            { "t": " Test Files  1 passed (1)", "tone": "ok" },
+            { "t": "      Tests  2 passed (2)", "tone": "ok" },
+            { "t": "   Duration  351ms", "tone": "dim" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "GitHub MCP 서버를 연결해 두었습니다. 에이전트에게 이슈 번호만 알려 주고 처리를 맡겨 볼까요?",
+      "action": "보내기"
+    },
+    {
+      "role": "user",
+      "text": "#151 이슈를 읽고 팀 규칙대로 처리해 줘. 테스트까지 통과하면 이슈에 처리 내용을 댓글로 남겨 줘."
+    },
+    { "role": "tool", "tool": "`issue_read` 실행", "delayMs": 900 },
+    { "role": "tool", "tool": "Read `.github/copilot-instructions.md`", "opens": "rules", "delayMs": 900 },
+    { "role": "tool", "tool": "Read `src/services/firmwareLog.ts`", "opens": "fw", "delayMs": 700 },
+    {
+      "role": "assistant",
+      "text": "**이슈 #151**: 펌웨어 업데이트 로그(`firmware.update`)에 장비 시리얼 번호가 그대로 남습니다.\n\n**팀 규칙**(`copilot-instructions.md`): 시리얼은 뒤 4자리만 남기고 `*`로 가리고, 고친 함수에는 경계값 테스트를 둡니다.\n\n✅ `maskSerial()`을 추가하고 로그에서 시리얼을 가립니다\n✅ 경계값(4자리 이하) 테스트를 만들고 돌립니다\n✅ 통과하면 #151에 처리 내용을 댓글로 남깁니다"
+    },
+    { "role": "tool", "tool": "`src/services/firmwareLog.ts` 편집됨", "opens": "fw", "sets": "fix", "delayMs": 900 },
+    { "role": "tool", "tool": "`test/firmwareLog.test.ts` 편집됨", "writes": "test", "sets": "e1", "delayMs": 1500 },
+    {
+      "role": "approve",
+      "what": "'npm' 명령을 실행하시겠습니까?",
+      "rows": [{ "label": "명령", "value": "npm test -- firmwareLog" }],
+      "line": "터미널 명령은 실행하기 전에 사람이 허용해야 합니다.",
+      "go": "허용",
+      "denied": "명령을 건너뛰었습니다. 테스트는 직접 돌려 확인해야 합니다."
+    },
+    { "role": "tool", "tool": "`npm test -- firmwareLog` 실행됨", "writes": "run", "delayMs": 1300 },
+    {
+      "role": "approve",
+      "kind": "mcp",
+      "what": "add_issue_comment 실행",
+      "sub": "github(MCP 서버)",
+      "rows": [
+        { "label": "owner", "value": "nuritech" },
+        { "label": "repo", "value": "sensor-hub" },
+        { "label": "issue_number", "value": "151" },
+        { "label": "body", "value": "펌웨어 업데이트 로그의 시리얼을 뒤 4자리만 남기도록 maskSerial() 을 추가했습니다. 경계값 테스트 2개 통과." }
+      ],
+      "warn": "MCP 서버 또는 악의적인 대화 콘텐츠가 도구를 통해 'Code'을(를) 오용하려고 시도할 수 있습니다.",
+      "go": "한 번 허용",
+      "denied": "도구를 건너뛰었습니다. 이슈 댓글은 직접 남겨야 합니다."
+    },
+    { "role": "tool", "tool": "`add_issue_comment` 실행", "delayMs": 900 },
+    {
+      "role": "assistant",
+      "text": "#151 처리를 마쳤습니다.\n\n✅ 로그의 시리얼을 `********4217`처럼 뒤 4자리만 남깁니다\n✅ 테스트 2개(정상 · 4자리 이하) **통과**\n✅ 이슈 #151에 처리 내용 댓글을 남겼습니다\n\n변경된 파일 2개를 검토한 뒤 **Keep**으로 받아들이세요."
+    },
+    {
+      "role": "cue",
+      "text": "편집기와 채팅 아래 목록에서 바뀐 내용을 확인했다면, 채팅 입력란 위의 Keep을 눌러 받아들입니다.",
+      "action": "Keep",
+      "target": "keep"
+    },
+    { "role": "tool", "tool": "변경 내용 2개 파일 유지", "sets": "kept", "delayMs": 400 }
+  ],
+  "recap": [
+    { "icon": "network", "name": "MCP로 이슈 읽기", "desc": "브라우저를 열지 않고 GitHub MCP 서버의 issue_read 로 #151을 읽었습니다." },
+    { "icon": "checkdoc", "name": "팀 규칙 그대로", "desc": "copilot-instructions.md 의 로그 · 테스트 규칙을 지켜 고쳤습니다." },
+    { "icon": "shield", "name": "쓰기는 승인 뒤에", "desc": "테스트 실행과 이슈 댓글은 모두 사람이 허용한 뒤에 실행됐습니다." },
+    { "icon": "check", "name": "이슈까지 마무리", "desc": "테스트 통과 후 처리 내용을 이슈에 댓글로 남겼습니다." }
+  ],
+  "finish": {
+    "sub": "GitHub MCP 서버로 이슈 #151을 읽고, 팀 규칙대로 로그의 시리얼을 가린 뒤 테스트를 통과시키고 이슈에 처리 댓글까지 남겼습니다.",
+    "outs": [
+      { "app": "vscode", "name": "src/services/firmwareLog.ts", "note": "maskSerial() · 로그 시리얼 가림" },
+      { "app": "vscode", "name": "test/firmwareLog.test.ts", "note": "테스트 2개 통과" },
+      { "app": "github", "name": "이슈 #151 댓글", "note": "add_issue_comment" }
+    ]
+  },
+  "anonymized": true
+}

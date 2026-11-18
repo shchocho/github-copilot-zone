@@ -1,0 +1,253 @@
+{
+  "id": "agent-plan",
+  "track": "agent",
+  "order": 2,
+  "agent": "vscode",
+  "surface": "vscode",
+  "model": "Auto",
+  "title": "Plan 에이전트로 계획부터 세우고 승인한 뒤 구현",
+  "summary": "/plan 으로 요청하면 에이전트가 코드를 읽고 단계별 계획을 먼저 보여 줍니다. 계획을 승인해야 파일을 고치기 시작합니다.",
+  "before": "큰 기능을 바로 맡겼다가 엉뚱한 파일을 고친 결과를 되돌리거나, 계획을 따로 문서로 써서 맞춰 봅니다.",
+  "hook": "무엇을 어떤 순서로 바꿀지 계획을 먼저 확인하고, 마음에 들 때 Implement Plan 으로 구현을 시작합니다.",
+  "startedAt": "2026년 11월 18일 수요일 · KST",
+  "vscode": {
+    "repo": "sensor-hub",
+    "branch": "feature/daily-report",
+    "chat": true,
+    "agent": "Plan",
+    "context": ["src/routes/sensors.ts"],
+    "tree": [
+      ".github/copilot-instructions.md",
+      "src/app.ts",
+      "src/routes/sensors.ts",
+      "src/services/aggregate.ts",
+      "src/services/readings.ts",
+      "src/services/report.ts",
+      "src/types.ts",
+      "test/readings.test.ts",
+      "test/report.test.ts",
+      "package.json",
+      "README.md"
+    ],
+    "edits": {
+      "files": ["src/services/report.ts", "src/routes/sensors.ts", "test/report.test.ts"],
+      "on": "e1",
+      "kept": "kept",
+      "added": 38,
+      "removed": 0
+    }
+  },
+  "scene": {
+    "eyebrow": "오늘 10:00 · 고객사 요청 #158",
+    "art": "dev-issue",
+    "artSlots": {
+      "파일": "sensors.ts",
+      "강조": "// 일별 리포트 API (#158)",
+      "메모": "어디부터 손대야 하지?",
+      "그림제목": "#158 일별 리포트",
+      "항목1": "하루 평균 · 최고 · 최저",
+      "항목2": "날짜로 조회",
+      "항목3": "기존 집계 코드 재사용",
+      "배지": "설계 먼저"
+    },
+    "headline": "바로 맡기기엔 ‹‹어디를 고칠지 먼저 맞춰 보고 싶다››",
+    "sub": "고객사가 센서별 하루 요약(평균 · 최고 · 최저)을 요청했습니다. 기존 집계 코드를 쓸지, 새로 만들지부터 정하고 시작하고 싶습니다.",
+    "points": [
+      { "icon": "split", "scene": "고칠 파일이 여러 개", "say": "서비스 · 라우트 · 테스트가 다 바뀌어요." },
+      { "icon": "refresh", "scene": "바로 맡겼다가 되돌리기", "say": "방향이 틀리면 결과를 통째로 버려야 해요." },
+      { "icon": "checkdoc", "scene": "합의할 계획", "say": "무엇을 어떤 순서로 바꿀지 먼저 보고 싶어요." }
+    ]
+  },
+  "overview": [
+    { "icon": "send", "title": "/plan 으로 요청", "desc": "에이전트 목록에서 Plan 을 고르고 만들 기능을 적습니다." },
+    { "icon": "docsearch", "title": "코드 읽고 계획", "desc": "관련 파일과 팀 규칙을 읽고 단계 · 파일 · 확인 방법을 정리합니다." },
+    { "icon": "checkdoc", "title": "계획 검토", "desc": "Plan summary 카드에서 계획을 읽고 Implement Plan · Approve Plan Only · 거부 중에 고릅니다." },
+    { "icon": "code", "title": "계획대로 구현", "desc": "승인한 계획대로 파일을 고치고 테스트로 확인합니다." }
+  ],
+  "workbench": {
+    "task": "일별 리포트 API",
+    "artifacts": {
+      "routes": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "read",
+        "name": "sensors.ts",
+        "where": "src/routes",
+        "code": {
+          "path": "src/routes/sensors.ts",
+          "kept": "kept",
+          "lines": [
+            { "t": "import { Router } from 'express';" },
+            { "t": "import { latestReadings } from '../services/readings';" },
+            { "t": "import { dailyReport } from '../services/report';", "diff": "add", "only": ["route"] },
+            { "t": "" },
+            { "t": "export const sensors = Router();" },
+            { "t": "" },
+            { "t": "sensors.get('/:id/readings', async (req, res) => {" },
+            { "t": "  const rows = await latestReadings(req.params.id);" },
+            { "t": "  if (!rows) return res.status(404).json({ error: 'SENSOR_NOT_FOUND' });" },
+            { "t": "  res.json({ data: rows });" },
+            { "t": "});" },
+            { "t": "" },
+            { "t": "// 일별 리포트 API (#158)", "cursor": true, "not": ["route"] },
+            { "t": "// 일별 리포트 API (#158)", "diff": "del", "only": ["route"] },
+            { "t": "sensors.get('/:id/report', async (req, res) => {", "diff": "add", "only": ["route"] },
+            { "t": "  const date = String(req.query.date ?? '');", "diff": "add", "only": ["route"] },
+            { "t": "  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) return res.status(400).json({ error: 'INVALID_DATE' });", "diff": "add", "only": ["route"] },
+            { "t": "  const report = await dailyReport(req.params.id, date);", "diff": "add", "only": ["route"] },
+            { "t": "  if (!report) return res.status(404).json({ error: 'SENSOR_NOT_FOUND' });", "diff": "add", "only": ["route"] },
+            { "t": "  res.json({ data: report });", "diff": "add", "only": ["route"] },
+            { "t": "});", "diff": "add", "only": ["route"] }
+          ]
+        }
+      },
+      "report": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "report.ts",
+        "where": "src/services",
+        "code": {
+          "path": "src/services/report.ts",
+          "added": true,
+          "kept": "kept",
+          "lines": [
+            { "t": "import { latestReadings } from './readings';", "diff": "add" },
+            { "t": "import { bucketize } from './aggregate';", "diff": "add" },
+            { "t": "", "diff": "add" },
+            { "t": "export interface DailyReport { date: string; avg: number; max: number; min: number; count: number }", "diff": "add" },
+            { "t": "", "diff": "add" },
+            { "t": "/** 하루치 측정값 요약. 센서가 없으면 null, 값이 없는 날은 count 0 */", "diff": "add" },
+            { "t": "export async function dailyReport(sensorId: string, date: string): Promise<DailyReport | null> {", "diff": "add" },
+            { "t": "  const rows = await latestReadings(sensorId);", "diff": "add" },
+            { "t": "  if (!rows) return null;", "diff": "add" },
+            { "t": "  const day = rows.filter(r => r.at.startsWith(date));", "diff": "add" },
+            { "t": "  if (!day.length) return { date, avg: 0, max: 0, min: 0, count: 0 };", "diff": "add" },
+            { "t": "  const [b] = bucketize(day, 24 * 60);", "diff": "add" },
+            { "t": "  return { date, avg: b.avg, max: b.max, min: Math.min(...day.map(r => r.value)), count: b.count };", "diff": "add" },
+            { "t": "}", "diff": "add" }
+          ]
+        }
+      },
+      "test": {
+        "app": "vscode",
+        "kind": "code",
+        "origin": "made",
+        "name": "report.test.ts",
+        "where": "test",
+        "code": {
+          "path": "test/report.test.ts",
+          "added": true,
+          "kept": "kept",
+          "lines": [
+            { "t": "import { describe, it, expect } from 'vitest';", "diff": "add" },
+            { "t": "import { dailyReport } from '../src/services/report';", "diff": "add" },
+            { "t": "", "diff": "add" },
+            { "t": "describe('dailyReport', () => {", "diff": "add" },
+            { "t": "  it('하루 평균 · 최고 · 최저를 돌려준다', async () => {", "diff": "add" },
+            { "t": "    expect(await dailyReport('TH-204', '2026-11-17')).toMatchObject({ avg: 71.4, max: 97, min: 52, count: 96 });", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "  it('값이 없는 날은 count 0', async () => {", "diff": "add" },
+            { "t": "    expect((await dailyReport('TH-204', '2026-01-01'))?.count).toBe(0);", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "  it('없는 센서면 null', async () => {", "diff": "add" },
+            { "t": "    expect(await dailyReport('NOPE', '2026-11-17')).toBeNull();", "diff": "add" },
+            { "t": "  });", "diff": "add" },
+            { "t": "});", "diff": "add" }
+          ]
+        }
+      },
+      "run": {
+        "app": "vscode",
+        "kind": "term",
+        "origin": "made",
+        "name": "테스트 실행",
+        "where": "pwsh",
+        "term": {
+          "lines": [
+            { "t": "npm test -- report", "tone": "cmd" },
+            { "t": "" },
+            { "t": "> sensor-hub@1.4.0 test", "tone": "dim" },
+            { "t": "> vitest run report", "tone": "dim" },
+            { "t": "" },
+            { "t": " ✓ test/report.test.ts (3 tests) 15ms", "tone": "ok" },
+            { "t": "" },
+            { "t": " Test Files  1 passed (1)", "tone": "ok" },
+            { "t": "      Tests  3 passed (3)", "tone": "ok" },
+            { "t": "   Duration  398ms", "tone": "dim" }
+          ]
+        }
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "cue",
+      "text": "채팅의 에이전트를 Plan 으로 바꾸고 /plan 으로 만들 기능을 적었습니다. 보내 볼까요?",
+      "action": "보내기"
+    },
+    {
+      "role": "user",
+      "text": "/plan 센서별 하루 평균 · 최고 · 최저를 돌려주는 일별 리포트 API(#158)를 추가하고 싶어. 날짜로 조회하고, 기존 집계 코드를 쓸 수 있으면 써 줘."
+    },
+    { "role": "tool", "tool": "Read `src/routes/sensors.ts`", "delayMs": 600 },
+    { "role": "tool", "tool": "Read `src/services/aggregate.ts`", "delayMs": 600 },
+    { "role": "tool", "tool": "Read `.github/copilot-instructions.md`", "delayMs": 600 },
+    {
+      "role": "assistant",
+      "text": "`aggregate.ts`의 `bucketize()`를 **하루(1,440분) 구간**으로 쓰면 평균 · 최고 · 개수를 그대로 얻을 수 있습니다. 최저만 따로 계산합니다. 팀 규칙에 맞춰 잘못된 날짜는 400 `INVALID_DATE`로 응답하겠습니다.\n\n아래 계획을 검토해 주세요."
+    },
+    {
+      "role": "approve",
+      "kind": "plan",
+      "what": "일별 리포트 API 계획",
+      "line": "센서별 일별 리포트 API (#158)",
+      "rows": [
+        { "label": "서비스", "value": "src/services/report.ts 에 dailyReport() — bucketize() 를 하루 구간으로 재사용, 최저는 따로 계산" },
+        { "label": "라우트", "value": "GET /api/sensors/:id/report?date=YYYY-MM-DD — 형식이 틀리면 400 INVALID_DATE" },
+        { "label": "테스트", "value": "test/report.test.ts — 정상 · 값이 없는 날 · 없는 센서" },
+        { "label": "확인", "value": "npm test -- report 로 테스트 통과 확인" }
+      ],
+      "go": "Implement Plan",
+      "denied": "계획을 거부했습니다. 다시 보기로 돌아가 계획을 승인할 수 있습니다."
+    },
+    { "role": "tool", "tool": "`src/services/report.ts` 편집됨", "writes": "report", "sets": "e1", "delayMs": 1900 },
+    { "role": "tool", "tool": "`src/routes/sensors.ts` 편집됨", "opens": "routes", "sets": "route", "delayMs": 900 },
+    { "role": "tool", "tool": "`test/report.test.ts` 편집됨", "writes": "test", "delayMs": 1900 },
+    {
+      "role": "approve",
+      "what": "'npm' 명령을 실행하시겠습니까?",
+      "rows": [{ "label": "명령", "value": "npm test -- report" }],
+      "line": "계획의 마지막 단계(확인)입니다. 터미널 명령은 실행하기 전에 사람이 허용해야 합니다.",
+      "go": "허용",
+      "denied": "명령을 건너뛰었습니다. 테스트는 직접 돌려 확인해야 합니다."
+    },
+    { "role": "tool", "tool": "`npm test -- report` 실행됨", "writes": "run", "delayMs": 1400 },
+    {
+      "role": "assistant",
+      "text": "계획한 네 단계를 마쳤고 테스트 3개가 **모두 통과**했습니다.\n\n✅ `dailyReport()` — 하루 평균 · 최고 · 최저 · 개수\n✅ `GET /api/sensors/:id/report?date=2026-11-17`\n✅ 테스트 3개(정상 · 값이 없는 날 · 없는 센서)\n\n변경된 파일 3개를 검토한 뒤 **Keep**으로 받아들이세요."
+    },
+    {
+      "role": "cue",
+      "text": "계획과 실제 변경이 맞는지 확인했다면, 채팅 입력란 위의 Keep을 눌러 받아들입니다.",
+      "action": "Keep",
+      "target": "keep"
+    },
+    { "role": "tool", "tool": "변경 내용 3개 파일 유지", "sets": "kept", "delayMs": 400 }
+  ],
+  "recap": [
+    { "icon": "send", "name": "/plan 으로 시작", "desc": "Plan 에이전트에게 만들 기능과 조건을 먼저 설명했습니다." },
+    { "icon": "checkdoc", "name": "계획 검토", "desc": "서비스 · 라우트 · 테스트 · 확인 네 단계를 읽고 Implement Plan 으로 승인했습니다." },
+    { "icon": "code", "name": "계획대로 구현", "desc": "기존 집계 코드를 재사용해 파일 3개를 고쳤습니다." },
+    { "icon": "shield", "name": "확인도 승인 뒤에", "desc": "테스트 명령은 허용한 뒤에 실행됐고 3개 모두 통과했습니다." }
+  ],
+  "finish": {
+    "sub": "Plan 에이전트가 세운 계획을 검토 · 승인한 뒤, 그 계획대로 일별 리포트 API를 구현하고 테스트까지 통과시켰습니다.",
+    "outs": [
+      { "app": "vscode", "name": "src/services/report.ts", "note": "새 파일 · dailyReport()" },
+      { "app": "vscode", "name": "src/routes/sensors.ts", "note": "리포트 라우트 추가" },
+      { "app": "vscode", "name": "test/report.test.ts", "note": "테스트 3개 통과" }
+    ]
+  },
+  "anonymized": true
+}

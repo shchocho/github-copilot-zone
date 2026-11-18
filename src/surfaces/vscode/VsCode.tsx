@@ -427,7 +427,7 @@ export function VsConfirm({ a, denied, onAllow, onDeny, onBack }: { a: MsgApprov
       <p className="vsc-confirm-t">{ci(plan ? 'checklist' : mcp ? 'tools' : 'terminal')}{plan ? L.planSummary : a.what}</p>
       {a.sub && <p className="vsc-confirm-sub">{a.sub}</p>}
       {plan && a.line && <p className="vsc-confirm-note">{a.line}</p>}
-      {plan && <ol className="vsc-plan">{(a.rows ?? []).map((r, i) => <li key={i}><b>{r.label}</b>{r.value}</li>)}</ol>}
+      {plan && <ol className="vsc-plan">{(a.rows ?? []).map((r, i) => <li key={i}><span><b>{r.label}</b> — {r.value}</span></li>)}</ol>}
       {mcp && a.line && <p className="vsc-confirm-note">{a.line}</p>}
       {mcp && !!a.rows?.length && (
         <>
