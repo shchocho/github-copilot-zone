@@ -54,8 +54,8 @@ function gatePage(json) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>GitHub Copilot 체험 존</title>
-<link rel="icon" href="logo/copilot/copilot.png">
+<title>Copilot 체험 존 [교육용 시뮬레이터] — GitHub Copilot 비공식 시연 화면</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
   :root { color-scheme: light; --ink: #1b1a19; --ink-2: #5a6b8c; --line: #d6deea; --accent: #0f6cbd; --bad: #c4314b; }
   * { box-sizing: border-box; }
@@ -96,7 +96,7 @@ function gatePage(json) {
 </head>
 <body class="is-checking">
 <main class="gate">
-  <img src="logo/copilot/copilot.png" alt="">
+  <img src="favicon.svg" alt="">
   <h1>GitHub Copilot 체험 존</h1>
   <p>비밀번호를 입력해 주세요.</p>
   <form id="gate-form">
