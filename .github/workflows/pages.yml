@@ -1,11 +1,14 @@
-# GitHub Pages 자동 배포: 이 브랜치에 푸시하면 비밀번호로 암호화한 사이트를 gh-pages 브랜치에 올립니다.
+# GitHub Pages 배포: 비밀번호로 암호화한 사이트를 gh-pages 브랜치에 올립니다.
 # 비밀번호는 저장소 Settings → Secrets and variables → Actions 의 PAGE_PASSWORD 에 넣습니다.
 # PAGE_PASSWORD 가 없으면 배포하지 않고 넘어갑니다(실패로 표시되지 않음).
-name: GitHub Pages 배포
+#
+# 2026-11-19: 공개 배포 중단. shchocho.github.io 전체가 Google 세이프 브라우징·Microsoft SmartScreen에서
+# '사기성 사이트'로 판정됐고, 'GitHub 이름 + 비밀번호 칸 + 암호화된 내용' 조합이 가장 유력한 원인이라 내렸습니다.
+# main 에 푸시해도 자동 배포하지 않습니다. 마지막 배포본은 archive/gh-pages-20261119 브랜치에 보관했습니다.
+# 다시 공개하려면 github.io 가 아닌, 진짜 인증이 있는 호스트(Azure Static Web Apps + Entra ID, Cloudflare Access 등)로 옮기세요.
+name: GitHub Pages 배포 (수동 전용)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
