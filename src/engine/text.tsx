@@ -1,21 +1,15 @@
-import type { ReactNode } from 'react';
-import type { Artifact, Filterable, FlowStep, PlayState, Vars } from '../types';
-import { DRAFT, DRAFT_ASSETS } from '../look';
+import type { Artifact, Filterable, PlayState, Vars } from '../types';
 
-/** {model} {effort} {pick:KEY} {val:KEY} 치환 */
+/** {model} {pick:KEY} {val:KEY} 치환 */
 export function fill(text: string, v: Vars): string {
   return text
     .replace(/\{model\}/g, v.model)
-    .replace(/\{effort\}/g, v.effort)
     .replace(/\{pick:([^}]+)\}/g, (m, k: string) => v.picks[k] ?? m)
     .replace(/\{val:([^}]+)\}/g, (m, k: string) => v.vals[k] ?? m);
 }
 
-/** 고른 선택지 id 목록 (+ 도구가 켠 깃발, 기능 찾기 성공 시 "hunted") */
-export const pickIds = (st: PlayState) => {
-  const ids = [...st.picks.map(p => p.option.id), ...st.flags];
-  return st.hunted ? [...ids, 'hunted'] : ids;
-};
+/** 고른 선택지 id 목록 + 도구가 켠 깃발 */
+export const pickIds = (st: PlayState) => [...st.picks.map(p => p.option.id), ...st.flags];
 
 export function passes(ids: string[], item?: Filterable | null): boolean {
   if (!item) return true;
@@ -25,10 +19,9 @@ export function passes(ids: string[], item?: Filterable | null): boolean {
 }
 export const filterBy = <T extends Filterable>(list: T[], ids: string[]) => list.filter(x => passes(ids, x));
 
-export function makeVars(st: PlayState, model: string, effort?: string): Vars {
+export function makeVars(st: PlayState, model: string): Vars {
   return {
-    model: st.model ?? model,
-    effort: st.effort ?? effort ?? '보통',
+    model,
     picks: Object.fromEntries(st.picks.map(p => [p.key, p.option.label])),
     vals: Object.fromEntries(st.picks.filter(p => p.option.value).map(p => [p.key, p.option.value as string])),
   };
@@ -41,18 +34,11 @@ export function artifactName(a: Artifact, ids: string[]): string {
   return a.name;
 }
 
-/** 흐름의 박자: 화면 조작(do)이 있는 단계는 조작 하나가 한 박자, 없는 단계는 단계가 한 박자 */
-export const flowBeats = (steps: FlowStep[]) => steps.flatMap((x, step) => (x.do?.length ? x.do : [undefined]).map(act => ({ step, act })));
-
-/** 작성 애니메이션 길이(행/블록 수) */
+/** 작성 애니메이션 길이(줄 수): 코드 · 터미널만 한 줄씩 써 내려간다 */
 export function writeLength(a: Artifact, ids: string[]): number {
-  if (a.kind === 'sheet') return a.sheet ? filterBy(a.sheet.rows, ids).length : 0;
-  if (a.kind === 'teams') return a.teams ? a.teams.body.length + 2 : 0;
-  if (a.kind === 'deck') return a.deck ? a.deck.slides.length : 0;
-  if (a.kind === 'flow') return a.flow ? flowBeats(filterBy(a.flow.steps, ids)).length : 0;
   if (a.kind === 'code') return a.code ? filterBy(a.code.lines, ids).length : 0;
   if (a.kind === 'term') return a.term ? filterBy(a.term.lines, ids).length : 0;
-  return a.blocks ? filterBy(a.blocks, ids).length : 0;
+  return 0;
 }
 
 /** **굵게** · `코드` */
@@ -103,47 +89,15 @@ function parseBlocks(text: string): Block[] {
 }
 
 /** 답변 본문: 문단 · ✅ 체크 목록 · > 인용 · ``` 코드 */
-export function Rich({ text, afterParagraph }: { text: string; afterParagraph?: (i: number) => ReactNode }) {
+export function Rich({ text }: { text: string }) {
   return (
     <>
       {parseBlocks(text).map((b, i) =>
         b.kind === 'quote' ? <blockquote key={i} className="sc-quote">{b.lines.join('\n')}</blockquote>
         : b.kind === 'code' ? <div key={i} className="sc-code">{b.lines.map((l, j) => <span key={j}><i>{j + 1}</i>{l}</span>)}</div>
         : b.kind === 'check' ? <ul key={i} className="sc-check">{b.items.map((t, j) => <li key={j}><span><Bold text={t} /></span></li>)}</ul>
-        : <p key={i}><Bold text={b.lines.join('\n')} />{afterParagraph?.(i)}</p>,
+        : <p key={i}><Bold text={b.lines.join('\n')} /></p>,
       )}
     </>
   );
 }
-
-/** 계약서 조항 템플릿의 빈칸 (___) */
-export function Blanks({ text }: { text: string }) {
-  return (
-    <>
-      {text.split(/(_{3,})/).map((t, i) =>
-        /^_{3,}$/.test(t)
-          ? <u key={i} className="wb-blank" style={{ minWidth: `${t.length * 0.5}em` }} />
-          : <Bold key={i} text={t} />,
-      )}
-    </>
-  );
-}
-
-/** 마지막 글자 받침에 맞는 목적격 조사 */
-export function objParticle(word: string): string {
-  const c = (word.trim().at(-1) ?? '').charCodeAt(0) - 44032;
-  return c < 0 || c > 11171 ? '을(를)' : c % 28 === 0 ? '를' : '을';
-}
-
-/** 파일 확장자로 앱 추정 */
-const EXT: Record<string, string> = {
-  xlsx: 'excel', xls: 'excel', csv: 'excel', docx: 'word', doc: 'word', pdf: 'word',
-  pptx: 'powerpoint', ppt: 'powerpoint', msg: 'outlook', eml: 'outlook', one: 'onenote',
-};
-export const appFromName = (name: string) => EXT[name.split('.').pop()?.toLowerCase() ?? ''] ?? 'word';
-
-/** 공개 폴더 기준 경로 */
-export const asset = (p: string) => {
-  const rel = p.replace(/^\//, '');
-  return (DRAFT && DRAFT_ASSETS[rel]) || rel;
-};

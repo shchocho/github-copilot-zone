@@ -4,7 +4,7 @@
  * 슬롯: 파일 · 강조 · 메모 · 그림제목 · 항목1~3 · 배지   (글자는 한 줄에 16자 안팎)
  * 강조색은 영역 색(--track)을 따른다.
  */
-const ACC = 'var(--track,#0969da)';
+const ACC = 'var(--zone-accent,#0969da)'; // 영역 색(overrides.css 의 main.sc --zone-accent)
 const INK = '#1f2328', SUB = '#59636e', LINE = '#d1d9e0';
 
 const code = (y: number, parts: [number, number, string][]) =>
@@ -46,8 +46,8 @@ function dev(id: string, picto: string): string {
 ${picto}
 </g>
 <g class="il-fade il-d5">
-<rect x="500" y="368" width="190" height="30" rx="15" style="fill:${ACC}"/>
-<text x="595" y="388" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">{{배지}}</text>
+<rect x="674" y="74" width="72" height="22" rx="11" style="fill:${ACC}" opacity=".14"/>
+<text x="710" y="89" font-size="11" font-weight="600" style="fill:${ACC}" text-anchor="middle">{{배지}}</text>
 </g>
 </svg>`;
 }
@@ -79,3 +79,8 @@ const PICTO: Record<string, string> = {
 export const SCENE_ART_DEV: Record<string, string> = Object.fromEntries(
   Object.entries(PICTO).map(([k, p]) => [`dev-${k}`, dev(`dev${k}`, p)]),
 );
+
+/** {{슬롯}} 자리에 scene.artSlots 값을 넣는다 (글자는 SVG 안에 들어가므로 이스케이프) */
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+export const fillArt = (tpl: string, slots: Record<string, string> = {}) =>
+  tpl.replace(/\{\{([^}]+)\}\}/g, (_m, k: string) => esc(slots[k.trim()] ?? ''));

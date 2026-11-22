@@ -11,9 +11,9 @@ VS Code 안의 **GitHub Copilot**과 GitHub.com의 **Copilot 코딩 에이전트
 
 | 화면 | 주소 | 내용 |
 |---|---|---|
-| 대기 | `#/` | 편집기 모양 미리보기와 "체험해보기". 아무 곳이나 누르면 홈으로 |
-| 홈 | `#/start` | 기능 영역 4개 선택 |
-| 시나리오 목록 | `#/t/<영역>` | 영역의 시나리오 카드 |
+| 대기 | `#/` | 회색 제안이 떴다 받아들여지는 편집기 미리보기와 "체험해보기". 아무 곳이나 누르면 홈으로 |
+| 홈 | `#/start` | 기능 영역 4개 — 왼쪽부터 Copilot이 맡는 범위가 넓어지는 순서(코드 완성 → Chat → 에이전트 → 코딩 에이전트) |
+| 시나리오 목록 | `#/t/<영역>` | 영역의 시나리오 2~3편을 한 화면에 — 지금 하는 방식과 Copilot과 함께하는 방식을 나란히 |
 | 재생 | `#/t/<영역>/<시나리오>` | 상황 → 흐름 → 체험 → 결과 |
 
 - **체험**: VS Code(또는 GitHub.com)와 똑같이 생긴 화면에서 안내 말풍선을 따라 실제 단추를 누릅니다. Tab · Ctrl+I · Ctrl+→ 는 키보드로도 누를 수 있습니다.
@@ -60,23 +60,18 @@ npm run dev
 
 웹 배포용 빌드는 `npm run build`, 결과는 `dist/` 폴더입니다. 주소는 해시(`#/…`) 방식이고 경로가 모두 상대 경로라 하위 경로에 올려도 서버 설정 없이 동작합니다. Azure Static Web Apps를 쓸 때는 `staticwebapp.config.json` 이 그대로 적용됩니다(앱 위치 `/`, 출력 위치 `dist`).
 
-### GitHub Pages (비밀번호 잠금)
+### 공개 배포는 꺼 두었습니다 (2026-11-19부터)
 
-주소: https://shchocho.github.io/github-copilot-zone/
-
-- `main` 에 푸시하면 `.github/workflows/pages.yml` 이 사이트 전체를 비밀번호로 암호화해 `gh-pages` 브랜치에 올립니다.
-- 비밀번호는 저장소에 적지 않습니다. 저장소 Settings → Secrets and variables → Actions → Repository secrets 의 `PAGE_PASSWORD` 에 넣습니다. 값이 없으면 배포 단계를 건너뜁니다(실패로 표시되지 않음).
-- 맞는 비밀번호를 넣으면 그 창(탭)을 닫기 전까지만 열립니다. 이미지 · 로고 파일은 암호화하지 않고, 소스 코드는 공개 저장소에 그대로 있습니다. "아무나 우연히 보지 못하게" 하는 용도입니다.
-- 직접 만들기: 다음 명령 결과인 `dist-pages/` 폴더 내용을 `gh-pages` 브랜치에 올립니다.
-
-```bash
-PAGE_PASSWORD='비밀번호' npm run build:pages
-```
+- `shchocho.github.io` 전체가 Google 세이프 브라우징 · Microsoft SmartScreen에서 '사기성 사이트'로 판정돼, 비밀번호 잠금 GitHub Pages 배포를 내렸습니다. 마지막 배포본은 `archive/gh-pages-20261119` 브랜치에 있습니다.
+- `.github/workflows/pages.yml` 은 이제 수동 실행만 됩니다(`main` 푸시로 배포되지 않음).
+- 다시 공개하려면 [CLAUDE.md](CLAUDE.md)의 "배포 안전 기준"을 먼저 읽고, github.io 가 아닌 진짜 인증이 있는 호스트(Azure Static Web Apps + Entra ID, Cloudflare Access 등)로 올립니다.
+- 행사 부스에서는 아래 "방법 1"(`build:local` 결과를 더블클릭)로 엽니다. 인터넷 연결이 필요 없습니다.
 
 ## 고쳐 쓰기
 
-- **문구(대기 · 홈 · 푸터)**: `src/copy.ts`
+- **문구(체험 존 이름 · 대기 · 홈 · 아래 안내)**: `src/copy.ts`
 - **기능 영역(이름 · 설명 · 색)**: `src/tracks.ts`
+- **대기 · 홈 · 목록 화면**: `src/screens/Attract.tsx` · `Home.tsx` · `ScenarioList.tsx` + `src/styles/ghcp-shell.css`
 - **VS Code 화면 문구**: `src/surfaces/vscode/labels.ts` — VS Code 소스와 공식 한국어 언어 팩에서 가져온 문구입니다. 새 문구는 지어내지 말고 `scripts/ui-labels/` 로 다시 뽑아 씁니다(방법: [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md)의 "문구 다시 뽑기").
 - **화면**: VS Code `src/surfaces/vscode/VsCode.tsx` + `src/styles/vscode.css`, GitHub.com `src/surfaces/github/GitHubWeb.tsx` + `src/styles/github.css`
 - **상황 그림**: `src/play/sceneArtDev.ts` (`dev-tests` · `dev-issue` · `dev-review` · `dev-docs` · `dev-commit`)
@@ -117,7 +112,7 @@ npm run e2e:all
 
 ## 문서
 
-- [DESIGN.md](DESIGN.md): 디자인 기준(부스 셸 토큰 · VS Code Dark Modern · GitHub Primer)
+- [DESIGN.md](DESIGN.md): 디자인 기준(로비 · 재생 셸 토큰 · VS Code Dark Modern · GitHub Primer)
 - [docs/UI-SOURCES.md](docs/UI-SOURCES.md): 화면 문구 · 모양의 근거와 아직 확인하지 못한 것
 - [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md): 다음 작업 프롬프트와 문구 다시 뽑기
 - `docs/reference/`: 원본 부스 화면의 엔진 · 렌더링 명세(필요한 절만 찾아 읽기)
@@ -127,5 +122,5 @@ npm run e2e:all
 - 화면 문구: [microsoft/vscode](https://github.com/microsoft/vscode)(MIT) 소스의 문자열과 [microsoft/vscode-loc](https://github.com/microsoft/vscode-loc) 한국어 언어 팩, VS Code · GitHub 공식 문서. 자세한 근거는 docs/UI-SOURCES.md.
 - 아이콘: [Codicons](https://github.com/microsoft/vscode-codicons) — © Microsoft Corporation, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (`@vscode/codicons`). 일부 아이콘은 Fluent UI System Icons(MIT).
 - 글꼴: Pretendard(OFL).
-- GitHub · GitHub Copilot · VS Code · Microsoft 로고 등 브랜드 자산은 `public/logo/` 에 있습니다. 외부에 공개할 때는 각 브랜드 사용 지침을 확인하세요.
-- 시나리오 플레이어 엔진은 공용 Copilot 체험 사이트(shchocho/2609)에서 가져왔습니다.
+- 셸(대기 · 홈 · 목록 · 탭 아이콘)에는 자체 아이콘(`public/favicon.svg`)과 "Copilot 체험 존 · 교육용 시뮬레이터" 이름을 씁니다. GitHub · VS Code 모양은 체험 단계의 제품 화면 안에만 있습니다(`public/logo/ghcp/`, Codicons). 외부에 공개할 때는 각 브랜드 사용 지침과 CLAUDE.md 의 배포 안전 기준을 확인하세요.
+- 시나리오 플레이어 엔진은 공용 Copilot 체험 사이트(shchocho/2609)에서 가져왔고, 2026-11-22 에 이 체험 존이 쓰지 않는 Microsoft 365 화면 코드를 지웠습니다.

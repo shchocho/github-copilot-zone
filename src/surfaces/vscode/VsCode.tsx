@@ -6,7 +6,7 @@
  */
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import type { Artifact, CodeFile, CodeLine, MsgApprove, PlayState, Scenario, TermLine } from '../../types';
-import type { Mark } from '../../components/chrome';
+import type { Mark } from '../../components/stream';
 import { filterBy } from '../../engine/text';
 import { Highlight, langOf } from './highlight';
 import { KEY_TARGETS, L } from './labels';

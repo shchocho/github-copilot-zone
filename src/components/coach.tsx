@@ -1,6 +1,6 @@
 /** 코치(안내 말풍선) 레이어 — 대상 영역만 밝게 뚫고 나머지를 어둡게 덮은 뒤 말풍선을 옆에 붙인다. */
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowRightRegular, BranchFork20Regular, Target20Regular } from '@fluentui/react-icons';
+import { ArrowRightRegular, BranchFork20Regular } from '@fluentui/react-icons';
 
 const GAP = 18, EDGE = 12, BOTTOM = 88, TAIL_MIN = 30, SIDE_MIN = 240, PAD = 6, RADIUS = 10, CLEAR = 16;
 const ALWAYS_LIT = ['[data-coach="lit"]', '.is-hunt'];
@@ -209,11 +209,10 @@ export function Tip({ zone, dim = true, children }: { zone?: string | string[] |
 
 const KIND = {
   choice: { say: '선택한 기준에 따라 결과물이 달라집니다', icon: <BranchFork20Regular fontSize={15} /> },
-  quiz: { say: 'Quiz', icon: <Target20Regular fontSize={15} /> },
 };
 
 /** 말풍선 본문 */
-export function Bubble({ kind, q, children }: { kind?: 'choice' | 'quiz'; q: string; children?: ReactNode }) {
+export function Bubble({ kind, q, children }: { kind?: 'choice'; q: string; children?: ReactNode }) {
   const k = kind ? KIND[kind] : null;
   return (
     <div className={`wb-pick${kind ? ` is-${kind}` : ''}`}>
@@ -243,47 +242,10 @@ export function Options({ options, onPick }: { options: { id: string; label: str
 
 export const Hint = ({ children }: { children: ReactNode }) => <p className="wb-hunt-hint">{children}</p>;
 export const Key = ({ children }: { children: ReactNode }) => <b className="cp-key" aria-hidden="true">{children}</b>;
-export const Solved = ({ children }: { children: ReactNode }) => <p className="wb-hunt-done">✓ {children}</p>;
 export function CueButton({ onClick, next, children }: { onClick: () => void; next?: boolean; children: ReactNode }) {
   return (
     <button type="button" className="sc-cue-btn" onClick={onClick}>
       {children}{next && <ArrowRightRegular aria-hidden="true" />}
     </button>
-  );
-}
-
-/** 화면 영역 찾기 퀴즈 보기 */
-export function SpotOptions({ options, answer, holdMs, onPick, onPass }: {
-  options: { at: string; label: string }[]; answer: number; holdMs: number; onPick: (at: string) => void; onPass: () => void;
-}) {
-  const [wrong, setWrong] = useState<number | null>(null);
-  const [passed, setPassed] = useState(false);
-  useEffect(() => {
-    if (!passed) return;
-    const t = window.setTimeout(onPass, holdMs);
-    return () => window.clearTimeout(t);
-  }, [passed, holdMs, onPass]);
-  const choose = (i: number) => {
-    if (passed) return;
-    if (i !== answer) { setWrong(null); window.requestAnimationFrame(() => setWrong(i)); return; }
-    setPassed(true);
-    const o = options[answer];
-    if (o) onPick(o.at);
-  };
-  return (
-    <>
-      <ul className="wb-opts">
-        {options.map((o, i) => (
-          <li key={i}>
-            <button type="button" className={`${passed && i === answer ? 'is-right' : ''}${wrong === i ? ' is-wrong' : ''}`} disabled={passed} onClick={() => choose(i)}>
-              <span className="wb-opt-n">{i + 1}</span>
-              <span className="wb-opt-t"><b>{o.label}</b></span>
-              <ArrowRightRegular aria-hidden="true" />
-            </button>
-          </li>
-        ))}
-      </ul>
-      {wrong !== null && !passed && <Hint>다시 찾아 보세요.</Hint>}
-    </>
   );
 }

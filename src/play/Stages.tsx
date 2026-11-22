@@ -1,18 +1,12 @@
 /** 재생 화면의 단계별 화면: 상황(장면) · 흐름(개요) · 결과 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowRightRegular, Dismiss20Regular, QrCode24Regular } from '@fluentui/react-icons';
-import type { OverviewStep, PlayState, Scenario, Scene, Vars } from '../types';
+import type { Artifact, OverviewStep, PlayState, Scenario, Scene, Vars } from '../types';
 import { productName } from '../data';
 import { SemIcon } from '../components/Icons';
-import { AppIcon } from '../components/ui';
 import { ArtifactView, DocTabs, DocWindow } from '../components/artifacts';
-import { Slides } from '../components/messages';
 import { artifactName, fill, pickIds } from '../engine/text';
-import { SCENE_ART, fillArt } from './sceneArt';
-import { SCENE_ART_DRAFT } from './sceneArtDraft';
-import { SCENE_ART_BOARD } from './sceneArtBoard';
-import { SCENE_ART_DEV } from './sceneArtDev';
-import { DRAFT } from '../look';
+import { SCENE_ART_DEV, fillArt } from './sceneArtDev';
 import { COPY } from '../copy';
 
 const POINT_GAP = 900 + 320;
@@ -27,7 +21,7 @@ export function SceneStage({ scene, onNext, cta = 'Copilot과 해보기' }: { sc
     const t = window.setTimeout(() => setShown(n => n + 1), POINT_GAP);
     return () => window.clearTimeout(t);
   }, [shown, scene.points.length]);
-  const tpl = scene.art ? (DRAFT && SCENE_ART_DRAFT[scene.art]) || SCENE_ART[scene.art] || SCENE_ART_BOARD[scene.art] || SCENE_ART_DEV[scene.art] : undefined;
+  const tpl = scene.art ? SCENE_ART_DEV[scene.art] : undefined;
   const svg = tpl ? fillArt(tpl, scene.artSlots) : undefined;
   // 템플릿의 꽉 찬 배경 도형을 숨겨 페이지 배경이 비치게 한다
   useLayoutEffect(() => {
@@ -56,7 +50,6 @@ export function SceneStage({ scene, onNext, cta = 'Copilot과 해보기' }: { sc
         ))}
       </ul>
       <span className="sc-scene-outro" style={{ '--outro-in': `${scene.points.length * POINT_GAP}ms` } as React.CSSProperties}>
-        <span className="sc-brandline" aria-hidden="true">Work <em>lighter</em></span>
         <button type="button" className="sc-start">{cta}<ArrowRightRegular aria-hidden="true" /></button>
       </span>
     </div>
@@ -73,18 +66,24 @@ export function PainStage({ title, caption, onNext }: { title: string; caption: 
   );
 }
 
-/** 제품 이름 뒤 조사: Chat·Excel 은 "과", 나머지는 "와" */
-const withParticle = (product: string) => (/(Chat|Excel)$/.test(product) ? '과' : '와');
-const suffix = (product: string) => product.replace(/^Copilot /, '');
-const CopilotLogo = ({ product }: { product: string }) => (product.startsWith('Copilot')
-  ? <><span className="sc-overview-copilot-logo"><img src="logo/copilot/copilot-logo-horiz-gray.png" alt="Copilot" /></span>{' '}</>
-  : null);
+/** 제품 이름 뒤 조사(과/와): 마지막 글자가 받침 있는 한글이거나 자음으로 끝나는 영어(GitHub Copilot · Chat)면 '과' */
+export function withParticle(word: string) {
+  const c = word.trim().slice(-1);
+  const code = c.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 ? '과' : '와';
+  return /[aeiouy]/i.test(c) ? '와' : '과';
+}
+
+/** 결과물 표시(탭 · 제목 앞): 코드 파일 · 터미널 · GitHub 페이지를 Codicons 로 구분한다 */
+function ArtifactMark({ a }: { a: Pick<Artifact, 'kind'> & { app?: string } }) {
+  const name = a.kind === 'term' ? 'terminal' : a.kind === 'gh' || a.app === 'github' ? 'git-pull-request' : 'file-code';
+  return <i className={`sc-art-mark codicon codicon-${name}`} aria-hidden="true" />;
+}
 
 export function ProductName({ product }: { product: string }) {
   return (
     <span className="sc-overview-product-name">
-      <CopilotLogo product={product} />
-      <span className="sc-overview-product-suffix">{suffix(product)}</span>
+      <span className="sc-overview-product-suffix">{product}</span>
     </span>
   );
 }
@@ -99,8 +98,7 @@ export function OverviewStage({ product, steps, hook, onNext }: { product: strin
       <div className="sc-stage-head">
         <h2>
           <span className="sc-overview-product-name">
-            <CopilotLogo product={product} />
-            <span className="sc-overview-product-suffix">{suffix(product)}</span>
+            <span className="sc-overview-product-suffix">{product}</span>
             <span className="sc-overview-product-particle">{withParticle(product)}</span>
           </span>{' '}함께라면?
         </h2>
@@ -117,7 +115,7 @@ export function OverviewStage({ product, steps, hook, onNext }: { product: strin
       <div className={`sc-outro${all ? ' is-done' : ''}`}>
         {all ? (
           <>
-            <p className="sc-ready">Ready?</p>
+            <p className="sc-ready">직접 해 볼까요?</p>
             <button type="button" className="sc-start" onClick={onNext}>지금 시작하기</button>
           </>
         ) : (
@@ -165,42 +163,30 @@ export function DoneStage({ s, st, vars, completed }: { s: Scenario; st: PlaySta
   const made = openedMade.length ? openedMade : Object.entries(arts).filter(([, a]) => a.origin === 'made').map(([id, a]) => ({ id, a }));
   const outsKey = Object.keys(s.finish?.outsBy ?? {}).find(k => ids.includes(k));
   const outs = (outsKey ? s.finish?.outsBy?.[outsKey] : undefined) ?? s.finish?.outs ?? [];
-  const hasArt = !made.length && !!s.artifact;
-  const talk = !made.length && !hasArt && outs.length > 0;
+  const talk = !made.length && outs.length > 0;
   const [cur, setCur] = useState(made[0]?.id ?? null);
-  const [slide, setSlide] = useState(1);
   const current = made.find(m => m.id === cur) ?? made[0];
-  const progressive = s.messages.some(m => m.role === 'tool' && m.translate);
   const product = productName(s);
-  const madeLabel = `${product} 생성`;
+  const madeLabel = '체험 결과';
   return (
-    <div className={`sc-done sc-stage-sky${made.length || hasArt || talk ? ' is-split' : ''}`}>
+    <div className={`sc-done sc-stage-sky${made.length || talk ? ' is-split' : ''}`}>
       {current && (
         <section className="sc-done-doc" aria-label="생성된 결과물">
           <DocWindow
             app={current.a.app}
             note={current.a.note}
             {...(made.length === 1
-              ? { mark: <AppIcon app={current.a.app} />, name: artifactName(current.a, ids), badge: madeLabel }
-              : { tabs: <DocTabs tabs={made.map(m => ({ id: m.id, name: artifactName(m.a, ids), mark: <AppIcon app={m.a.app} />, on: m.id === current.id }))} onPick={id => { setCur(id); setSlide(1); }} /> })}
+              ? { mark: <ArtifactMark a={current.a} />, name: artifactName(current.a, ids), badge: madeLabel }
+              : { tabs: <DocTabs tabs={made.map(m => ({ id: m.id, name: artifactName(m.a, ids), mark: <ArtifactMark a={m.a} />, on: m.id === current.id }))} onPick={setCur} /> })}
           >
-            <ArtifactView a={current.a} writing={null} vars={vars} ids={ids} slide={slide} moved={st.moved} progressive={progressive} over={st.over} onSlide={setSlide} />
+            <ArtifactView a={current.a} ids={ids} />
           </DocWindow>
-        </section>
-      )}
-      {hasArt && s.artifact && (
-        <section className="sc-done-doc is-art" aria-label="생성된 결과물">
-          <section className="booth-artifact" aria-label={s.artifact.title}>
-            {s.artifact.kind === 'slides' && s.artifact.slides
-              ? <Slides slides={s.artifact.slides} title={s.artifact.title} />
-              : s.artifact.src ? <img src={s.artifact.src} alt={s.artifact.title} /> : null}
-          </section>
         </section>
       )}
       {talk && (
         <section className="sc-done-doc is-talk">
           <u>생성된 결과물</u>
-          <ul className="sc-outs">{outs.map((o, i) => <li key={i}><AppIcon app={o.app} /><b>{o.name}</b></li>)}</ul>
+          <ul className="sc-outs">{outs.map((o, i) => <li key={i}><ArtifactMark a={{ kind: 'code', app: o.app }} /><b>{o.name}</b></li>)}</ul>
         </section>
       )}
       <div className="sc-done-side">
@@ -213,12 +199,6 @@ export function DoneStage({ s, st, vars, completed }: { s: Scenario; st: PlaySta
           <p>{completed ? s.finish?.sub ?? s.hook ?? s.summary : '체험을 끝까지 진행하지 않았습니다.'}</p>
         </div>
         <div className="sc-done-grid">
-          {outs.length > 0 && !made.length && !talk && (
-            <section className="sc-done-sec" aria-label="생성된 결과물">
-              <u>생성된 결과물</u>
-              <ul className="sc-outs">{outs.map((o, i) => <li key={i}><AppIcon app={o.app} /><b>{o.name}</b></li>)}</ul>
-            </section>
-          )}
           {completed && !!s.recap?.length && (
             <section className="sc-done-sec is-quiet">
               <ul className="sc-recap">

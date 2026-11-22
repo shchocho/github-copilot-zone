@@ -292,4 +292,7 @@ button.vsc-send { color: #fff; background: var(--vsc-accent); }
 .vsc.vsc-static { height: auto; max-height: 100%; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
 .vsc.vsc-static .vsc-editor { flex: 1; }
 .vsc.vsc-static .vsc-code { padding-bottom: 12px; font-size: 13px; line-height: 18px; }
+/* 결과 화면: 긴 줄은 VS Code 의 자동 줄 바꿈(editor.wordWrap)처럼 접어 가로 스크롤을 없앤다 */
+.vsc.vsc-static .vsc-ln code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.vsc.vsc-static .vsc-code { height: auto; overflow: visible; }
 .vsc.vsc-static .vsc-panel { flex: 1; border-top: 0; }

@@ -3,78 +3,46 @@ import { countByTrack } from '../data';
 import { go, hashTrack } from '../router';
 import { TrackIcon } from '../components/Icons';
 import { COPY } from '../copy';
+import { Lockup, LobbyFoot, PRODUCT_LABEL } from './Lobby';
 
-const GROUPS = [
-  { title: COPY.groupWork, tracks: TRACKS.filter(t => !t.group) },
-  { title: COPY.groupProduct, tracks: TRACKS.filter(t => t.group === 'product') },
-].filter(g => g.tracks.length > 0);
-
-/** 홈(#/start) — 업무 영역 · 제품 기능 체험(트랙) 선택 */
+/** 홈(#/start) — 체험할 기능(트랙) 고르기. 왼쪽에서 오른쪽으로 갈수록 Copilot이 맡는 범위가 넓어지는 순서다. */
 export function Home() {
   const counts = countByTrack();
   return (
-    <main className="booth-home" data-brand-theme="copilot">
-      <svg className="booth-paint-defs" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="copilot-green" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#c9ef6a" />
-            <stop offset=".55" stopColor="#8fd14f" />
-            <stop offset="1" stopColor="#4dd2a3" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <header className="booth-hero booth-home-head">
-        <div className="booth-hero-inner booth-home-copy">
-          <h1 className="booth-home-title">
-            <span className="booth-home-title-line">
-              <span className="booth-home-title-product">
-                <span className="booth-home-lockup ghcp-lockup">
-                  <img src="logo/ghcp/copilot.svg" alt="" /><b>GitHub Copilot</b>
-                </span>
-                <span>{COPY.particle}</span>
-              </span>
-              <span>함께라면,</span>
-            </span>
-            <span>{COPY.tagline}</span>
-          </h1>
-          <p className="booth-hero-about">
-            <span>{COPY.homeLead}</span>
-            <span>{COPY.homeSub}</span>
-          </p>
-        </div>
-      </header>
-      <div className="booth-track-groups">
-        {GROUPS.map(g => (
-          <section key={g.title} aria-label={g.title}>
-            <h2>{g.title}</h2>
-            <ul className="booth-track-grid" style={{ '--cols': g.tracks.length } as React.CSSProperties}>
-              {g.tracks.map(t => (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    className="booth-track-card"
-                    data-track={t.id}
-                    disabled={!counts[t.id]}
-                    onClick={() => go(hashTrack(t.id))}
-                  >
-                    <span className="booth-track-inner">
-                      <span className="booth-track-icon"><TrackIcon id={t.id} fallback={t.icon} /></span>
-                      <div className="booth-track-body">
-                        <strong>{t.name}</strong>
-                        <p>{t.about}</p>
-                      </div>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+    <main className="lobby lobby-home">
+      <header className="lobby-top"><Lockup /></header>
+      <div className="lobby-head">
+        <h1>GitHub Copilot{COPY.particle} 함께라면,<br /><span>{COPY.tagline}</span></h1>
+        <p>{COPY.homeLead} {COPY.homeSub}</p>
       </div>
-      <footer className="booth-foot">
-        <span>{COPY.footerLeft}</span>
-        <span className="booth-em">{COPY.footerRight}</span>
-      </footer>
+      <section className="lobby-tracks" aria-label={COPY.groupWork}>
+        <p className="lobby-scale" aria-hidden="true">
+          <span>{COPY.scaleFrom}</span><i /><span>{COPY.scaleTo}</span>
+        </p>
+        <ol className="lobby-track-row">
+          {TRACKS.map((t, i) => {
+            const n = counts[t.id] ?? 0;
+            const product = t.products?.[0] ?? 'vscode';
+            return (
+              <li key={t.id}>
+                <button type="button" className="lobby-track" data-track={t.id} disabled={!n} onClick={() => go(hashTrack(t.id))}>
+                  <span className="lobby-track-top">
+                    <span className="lobby-track-icon"><TrackIcon id={t.id} fallback={t.icon} /></span>
+                    <span className="lobby-track-no">{String(i + 1).padStart(2, '0')}</span>
+                  </span>
+                  <strong>{t.name}</strong>
+                  <span className="lobby-track-about">{t.about}</span>
+                  <span className="lobby-track-foot">
+                    <span><i className={`codicon codicon-${product}`} aria-hidden="true" />{PRODUCT_LABEL[product] ?? product}</span>
+                    <span>시나리오 {n}편<i className="codicon codicon-arrow-right" aria-hidden="true" /></span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+      <LobbyFoot />
     </main>
   );
 }

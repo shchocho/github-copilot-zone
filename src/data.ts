@@ -28,72 +28,11 @@ export function countByTrack(): Record<string, number> {
   return out;
 }
 
-/* ---------- 제품/앱 이름, 화면 구성 ---------- */
+/* ---------- 제품 이름 ---------- */
 export const AGENTS = {
-  chat: { name: 'Copilot Chat', full: 'Copilot Chat' },
-  cowork: { name: 'Copilot Cowork', full: 'Copilot Cowork' },
-  scout: { name: 'Microsoft Scout', full: 'Microsoft Scout' },
-  office: { name: 'Copilot', full: 'Microsoft 365 Copilot' },
-  flow: { name: 'Copilot', full: 'Power Automate' },
-  studio: { name: '에이전트', full: 'Copilot Studio' },
-  code: { name: 'Copilot', full: 'Copilot Code' },
-  teams: { name: 'Teams', full: 'Microsoft Teams' },
   vscode: { name: 'GitHub Copilot', full: 'VS Code의 GitHub Copilot' },
   github: { name: 'GitHub Copilot', full: 'GitHub.com의 GitHub Copilot' },
 } as const;
 
-export const APPS = {
-  excel: { name: 'Excel', full: 'Microsoft Excel' },
-  onenote: { name: 'OneNote', full: 'Microsoft OneNote' },
-  outlook: { name: 'Outlook', full: 'Microsoft Outlook' },
-  powerpoint: { name: 'PowerPoint', full: 'Microsoft PowerPoint' },
-  teams: { name: 'Teams', full: 'Microsoft Teams' },
-  word: { name: 'Word', full: 'Microsoft Word' },
-} as const;
-export type AppId = keyof typeof APPS;
-export const isApp = (x: string): x is AppId => x in APPS;
-
-/** 화면에 보일 제품 이름 — Office 앱 안의 Copilot 은 "Copilot in Word" 처럼 앱 이름을 붙인다 */
-export const productName = (s: Scenario) =>
-  // Forms 처럼 APPS 에 없는 앱은 화면 이름의 첫 글자를 대문자로 쓴다
-  s.agent === 'office' && s.surface ? `Copilot in ${isApp(s.surface) ? APPS[s.surface].name : s.surface[0].toUpperCase() + s.surface.slice(1)}` : AGENTS[s.agent].full;
-
-export const MODELS = [
-  { v: '자동', d: '작업에 가장 적합한 모델' },
-  { v: 'GPT 5.5', d: '중간 수준 추론에 적합한 모델' },
-  { v: 'Opus 5', d: '복잡하고 중요한 작업에 적합' },
-  { v: 'Sonnet 5', d: '일상 작업에 효율적' },
-  { v: 'Fable 5.1', d: '야심 찬 프로젝트를 위한 가장 뛰어난 모델' },
-];
-export const EFFORTS = [
-  { v: '낮음', d: '짧고 빠르게 답합니다' },
-  { v: '보통', d: '일반적인 업무에 적당합니다' },
-  { v: '높음', d: '조건이 여러 개일 때 사용합니다' },
-  { v: '매우 높음', d: '가장 꼼꼼하게 비교합니다' },
-];
-
-export const APP_LOGO: Record<AppId, string> = {
-  excel: 'logo/m365/excel.svg',
-  word: 'logo/m365/word.svg',
-  powerpoint: 'logo/m365/powerpoint.svg',
-  outlook: 'logo/m365/outlook.svg',
-  teams: 'logo/m365/teams.svg',
-  onenote: 'brand/m365-icon-gradient/onenote.png',
-};
-
-const SURFACE_LOGO: Record<string, string> = {
-  ...APP_LOGO,
-  forms: 'logo/m365/forms.svg',
-  teamsapp: APP_LOGO.teams,
-  studio: 'logo/copilot/copilot-studio.svg',
-  cloudflow: 'logo/copilot/power-automate.svg',
-  deskflow: 'logo/copilot/power-automate.svg',
-  vscode: 'logo/ghcp/vscode.svg',
-  github: 'logo/ghcp/github.svg',
-};
-/** 목록 카드 왼쪽 위의 제품 로고 한 개. Chat·Cowork·Code 는 전용 공식 아이콘이 없어 Copilot 로고를 쓴다 */
-export const cardLogo = (s: Scenario) => SURFACE_LOGO[s.surface ?? ''] ?? SURFACE_LOGO[s.agent] ?? 'logo/ghcp/copilot.svg';
-export function madeAppOf(s: Scenario): AppId | undefined {
-  for (const a of Object.values(s.workbench?.artifacts ?? {})) if (a.origin === 'made' && isApp(a.app)) return a.app;
-  return undefined;
-}
+/** 화면에 보일 제품 이름 */
+export const productName = (s: Scenario) => AGENTS[s.agent].full;

@@ -23,14 +23,51 @@
   font-size: var(--booth-body);
   color: var(--copilot-ink);
 }
-/* 체험 데이터 안내 문구 */
-.booth-disclaimer {
-  position: fixed;
-  right: 14px;
-  bottom: 10px;
-  z-index: 5;
-  margin: 0;
-  font-size: 12px;
-  color: var(--copilot-ink-3);
-  pointer-events: none;
+
+/* ---------- 체험 존 팔레트 (2026-11-22) ----------
+ * 공용 버전에서 온 Microsoft 365 Copilot 색(연두 #aee02f · 하늘 #4dd2e3 · 베이지 바탕 · 하늘 사진 · 분홍 그라데이션)을
+ * 차분한 중립 바탕 + 영역 색 강조로 바꾼다. 제품 화면(VS Code · GitHub)은 vscode.css · github.css 를 따른다.
+ * 글자 대비: ink-2 #555d68 · ink-3 #66707c 는 #f5f6f8 바탕에서 각각 6.2:1 · 4.7:1.
+ */
+:root {
+  --copilot-neutral: #f5f6f8;
+  --copilot-canvas: #f5f6f8;
+  --copilot-hero-bg: #ffffff;
+  --copilot-black: #1c1f24;
+  --copilot-ink: #1c1f24;
+  --copilot-ink-2: #555d68;
+  --copilot-ink-3: #66707c;
+  --copilot-line: #dfe2e7;
+  --booth-tile: #eceef1;
+  --booth-tile-strong: #e3e6ea;
 }
+main.sc { --zone-accent: #2f6fde; }
+main.sc[data-track='completions'] { --zone-accent: var(--track-completions); }
+main.sc[data-track='chat'] { --zone-accent: var(--track-chat); }
+main.sc[data-track='agent'] { --zone-accent: var(--track-agent); }
+main.sc[data-track='cloud'] { --zone-accent: var(--track-cloud); }
+main.sc {
+  --copilot-ui-accent: color-mix(in srgb, var(--zone-accent) 20%, #fff);
+  --copilot-ui-accent-alt: color-mix(in srgb, var(--zone-accent) 20%, #fff);
+  --sc-zone: var(--zone-accent);
+  --sc-zone-60: color-mix(in srgb, var(--zone-accent) 60%, transparent);
+  --sc-zone-45: color-mix(in srgb, var(--zone-accent) 45%, transparent);
+  --sc-zone-28: color-mix(in srgb, var(--zone-accent) 28%, transparent);
+  --sc-zone-14: color-mix(in srgb, var(--zone-accent) 14%, transparent);
+  --sc-zone-8: color-mix(in srgb, var(--zone-accent) 8%, transparent);
+  --sc-zone-0: color-mix(in srgb, var(--zone-accent) 0%, transparent);
+  --sc-lit: var(--zone-accent);
+  --sc-lit-60: color-mix(in srgb, var(--zone-accent) 60%, transparent);
+  --sc-lit-45: color-mix(in srgb, var(--zone-accent) 45%, transparent);
+  --sc-lit-28: color-mix(in srgb, var(--zone-accent) 28%, transparent);
+  --sc-lit-0: color-mix(in srgb, var(--zone-accent) 0%, transparent);
+}
+/* 머리글은 흰 표면 + 경계선, 단계 화면은 사진 · 그라데이션 없이 중립 바탕 */
+main.sc .sc-head { background: var(--copilot-hero-bg); }
+main.sc .sc-stage-sky,
+main.sc .sc-scene { background: var(--sc-canvas); }
+/* 흐름 화면의 진행 선 · 안내 점은 영역 색 그대로(엷은 색은 2px 선에서 보이지 않음) */
+main.sc .sc-flow:after,
+main.sc .sc-flow-more i { background: var(--zone-accent); }
+/* 흐름 끝의 "직접 해 볼까요?" — 공용 버전의 영문 기울임 세리프(Ready?)는 한글에 맞지 않아 본문 글꼴로 */
+main.sc .sc-ready { font-family: var(--booth-font); font-style: normal; font-weight: 700; font-size: clamp(26px, calc(2.2 * var(--vw) + .8 * var(--vh)), 52px); letter-spacing: -.01em; }

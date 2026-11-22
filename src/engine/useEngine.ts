@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Message, MsgApprove, MsgChoice, MsgCue, MsgHunt, MsgSpot } from '../types';
+import type { Message, MsgApprove, MsgChoice, MsgCue } from '../types';
 
 /** 메시지가 나타나기 전 대기 시간 (ms) */
 export function revealDelay(m: Message): number {
-  if (m.role === 'cue' || m.role === 'spot' || m.role === 'approve' || m.role === 'choice' || m.role === 'hunt') return 0;
-  if ('delayMs' in m && m.delayMs != null) return m.delayMs;
-  if (m.role === 'note') return 400;
-  if (m.role === 'tool') return 900;
+  if (m.role === 'cue' || m.role === 'approve' || m.role === 'choice') return 0;
+  if (m.role === 'tool') return m.delayMs ?? 900;
   if (m.role === 'user') return 700;
   return Math.min(6000, 900 + m.text.length * 42);
 }
@@ -19,10 +17,8 @@ export interface Engine {
   done: boolean;
   pending: MsgCue | null;
   ask: string | null;
-  spot: MsgSpot | null;
   approve: MsgApprove | null;
   choice: MsgChoice | null;
-  hunt: MsgHunt | null;
   busy: boolean;
   play: () => void;
   pause: () => void;
@@ -33,7 +29,7 @@ export interface Engine {
 }
 
 /**
- * 시나리오 재생기. messages 를 하나씩 공개하며, cue/spot/approve/choice/hunt 를 만나면
+ * 시나리오 재생기. messages 를 하나씩 공개하며, cue/approve/choice 를 만나면
  * 사용자가 act() 할 때까지 멈춘다. skip(m) 이 true 인 메시지는 즉시 건너뛴다.
  */
 export function useEngine(messages: Message[], skip?: (m: Message) => boolean, autoplay = true): Engine {
@@ -51,11 +47,9 @@ export function useEngine(messages: Message[], skip?: (m: Message) => boolean, a
   const raw = messages[shown];
   const cur = !done && raw && skip?.(raw) ? undefined : raw;
   const pending = !done && cur?.role === 'cue' ? cur : null;
-  const spot = !done && cur?.role === 'spot' ? cur : null;
   const approve = !done && cur?.role === 'approve' ? cur : null;
   const choice = !done && cur?.role === 'choice' ? cur : null;
-  const hunt = !done && cur?.role === 'hunt' ? cur : null;
-  const gate = !!(pending || spot || approve || choice || hunt);
+  const gate = !!(pending || approve || choice);
   const busy = !!(playing && !done && !gate && cur?.role === 'assistant' && messages[shown - 1]?.role !== 'tool');
   const next = pending ? messages[shown + 1] : undefined;
   const ask = next?.role === 'user' ? next.text : null;
@@ -93,7 +87,7 @@ export function useEngine(messages: Message[], skip?: (m: Message) => boolean, a
   }, [shown, total]);
 
   return {
-    shown, total, playing: playing && !done && !gate, done, pending, ask, spot, approve, choice, hunt, busy,
+    shown, total, playing: playing && !done && !gate, done, pending, ask, approve, choice, busy,
     play, pause, restart, back, canBack: shown > 0, act,
   };
 }

@@ -1,4 +1,4 @@
-/** 시나리오 재생 화면: 상황 → 흐름 → 체험 → 결과 */
+/** 시나리오 재생 화면: 상황 → 흐름 → 체험(VS Code · GitHub.com) → 결과 */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowCounterclockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, HomeRegular, NextRegular,
@@ -10,21 +10,21 @@ import { go, HASH_ATTRACT, hashTrack } from '../router';
 import { useEngine } from '../engine/useEngine';
 import { useWriting } from '../engine/useWriting';
 import { fill, makeVars, passes, pickIds } from '../engine/text';
-import { MessageView, Permission, Working } from '../components/messages';
-import { Bubble, CueButton, Hint, Key, Options, Solved, SpotOptions, Tip, TipLayer } from '../components/coach';
-import { CHAT_NAV, ChatComposer, ChatMain, CpApp, History, NavItem, RailTabs, scrollToBottom, scrollToHold, type PickPhase } from '../components/chrome';
+import { MessageView } from '../components/messages';
+import { Bubble, CueButton, Hint, Key, Options, Tip, TipLayer } from '../components/coach';
+import { scrollToBottom, scrollToHold, type Mark } from '../components/stream';
 import { WE } from '../components/ui';
-import { Cowork } from './Cowork';
-import { AppWindow } from '../surfaces/AppWindow';
-import { TeamsApp } from '../surfaces/TeamsApp';
 import { VsCodeWindow, VsConfirm, VsStep, VsWorking } from '../surfaces/vscode/VsCode';
 import { KEY_TARGETS } from '../surfaces/vscode/labels';
 import { GitHubWeb } from '../surfaces/github/GitHubWeb';
 import { DoneStage, OverviewStage, PainStage, SceneStage } from './Stages';
 
 const LABEL: Record<string, string> = { pain: '상황', overview: '흐름', demo: '체험', done: '결과' };
-const SPOT_HOLD = 2600, REWIND_MS = 1600;
+const REWIND_MS = 1600;
 const NO_MESSAGES: Message[] = [];
+/** 화면 영역 → class. 말풍선이 붙을 자리(.zone-composer 등) */
+const mark: Mark = zone => `zone-${zone}`;
+const toolView = (t: string, a: boolean) => <VsStep text={t} active={a} />;
 
 export function Play({ track, scenario }: { track: string; scenario: string }) {
   const s = scenarioById(scenario);
@@ -33,16 +33,11 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
   const ids = pickIds(st);
   const p = useEngine(s?.messages ?? NO_MESSAGES, m => !passes(ids, m));
   const [stepIdx, setStepIdx] = useState(0);
-  const [restarts, setRestarts] = useState(0);
   const [rewind, setRewind] = useState(0);
   const [deniedAt, setDeniedAt] = useState<number | null>(null);
-  const [lit, setLit] = useState<string | null>(null);
   const [holdAt, setHoldAt] = useState<number | null>(null);
   const streamRef = useRef<HTMLDivElement>(null);
 
-  // 앱 창 시나리오(Office · Power Automate · Copilot Studio …)는 결과물(workbench)이 있어도 Cowork 화면이 아니라 그 앱 화면에서 재생한다
-  const office = !!s && !['chat', 'cowork', 'scout'].includes(s.agent);
-  const cowork = !!s?.workbench && !office;
   const steps = s ? ['pain', ...(s.overview?.length ? ['overview'] : []), 'demo', 'done'] : [];
   const step = steps[Math.min(stepIdx, steps.length - 1)] ?? 'demo';
 
@@ -53,51 +48,23 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
   }, [rewind]);
   useEffect(() => { if (step === 'demo') p.play(); else p.pause(); }, [step, p.play, p.pause]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Copilot Chat: 답변이 나오면 멈추고 "이어서 보기"
+  // 답변이 나오면 멈추고 "이어서 보기"
   useEffect(() => {
-    if (step !== 'demo' || cowork || p.shown === 0) return;
+    if (step !== 'demo' || p.shown === 0) return;
     const m = s?.messages[p.shown - 1];
     if (m?.role === 'assistant' && passes(ids, m)) setHoldAt(p.shown - 1);
   }, [step, p.shown, s, ids.length]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (step === 'demo' && holdAt !== null) p.pause(); }, [step, holdAt, p.pause, p.playing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useWriting(office ? s : undefined, step === 'demo', p.shown, st, setSt, ids);
-
-  // "/" 로 자료를 찾아 붙이는 연출
-  const firstUserIdx = s ? s.messages.findIndex(m => m.role === 'user') : -1;
-  const firstUser = firstUserIdx >= 0 ? s?.messages[firstUserIdx] : undefined;
-  const pick = firstUser?.role === 'user' ? firstUser.pick : undefined;
-  const [phase, setPhase] = useState<PickPhase>('done');
-  const phaseStarted = useRef(false);
-  useEffect(() => {
-    if (step !== 'demo' || !p.ask || !pick || phaseStarted.current) return;
-    phaseStarted.current = true;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setPhase('search'); return; }
-    setPhase('type');
-    const tm = window.setTimeout(() => setPhase('search'), 850);
-    return () => window.clearTimeout(tm);
-  }, [step, p.ask, pick]);
-  const pickPhase: PickPhase = pick && p.ask ? (phaseStarted.current ? phase : 'type') : 'done';
-  const pickDone = !pick || pickPhase === 'done';
-  const selectPick = () => {
-    if (pickPhase !== 'search') return;
-    setPhase('pick');
-    window.setTimeout(() => setPhase('done'), 460);
-  };
-
-  // 화면 영역 찾기 퀴즈의 표시
-  const marks = p.spot && !p.spot.plain && holdAt === null && !lit ? p.spot.options.map(o => o.at) : [];
-  const mark = (zone: string) => `zone-${zone}${marks.includes(zone) ? ' is-asked' : ''}${lit === zone ? ' is-lit' : ''}`;
-  const actsMark = marks.includes('actions') ? 'is-asked' : lit === 'actions' ? 'is-lit' : '';
+  useWriting(s, step === 'demo', p.shown, st, setSt, ids);
 
   // 시나리오가 바뀌면 초기화
   const [seen, setSeen] = useState(scenario);
   if (seen !== scenario) {
-    setSeen(scenario); setStepIdx(0); setLit(null); setHoldAt(null); setSt(INITIAL_STATE); setDeniedAt(null);
-    phaseStarted.current = false; setPhase('done');
+    setSeen(scenario); setStepIdx(0); setHoldAt(null); setSt(INITIAL_STATE); setDeniedAt(null);
   }
 
-  useEffect(() => { scrollToBottom(streamRef.current); }, [step, p.shown, p.done, p.pending, p.spot, holdAt]);
+  useEffect(() => { scrollToBottom(streamRef.current); }, [step, p.shown, p.done, p.pending, holdAt]);
   useEffect(() => scrollToHold(streamRef.current), [holdAt]);
 
   const next = useCallback(() => setStepIdx(i => Math.min(i + 1, steps.length - 1)), [steps.length]);
@@ -111,15 +78,14 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
     );
   }
 
-  const vars = makeVars(st, s.model, s.effort);
+  const vars = makeVars(st, s.model);
   const resetAll = () => {
-    setRestarts(n => n + 1); setLit(null); setHoldAt(null); setSt(INITIAL_STATE); setDeniedAt(null);
-    phaseStarted.current = false; setPhase('done');
+    setHoldAt(null); setSt(INITIAL_STATE); setDeniedAt(null);
     p.restart();
   };
   const canBack = (step === 'demo' && p.canBack) || stepIdx > 0;
   const back = () => {
-    setLit(null); setHoldAt(null); setDeniedAt(null);
+    setHoldAt(null); setDeniedAt(null);
     if (step === 'demo' && p.canBack) { setRewind(Date.now()); p.back(); return; }
     p.pause();
     setStepIdx(i => Math.max(i - 1, 0));
@@ -135,7 +101,8 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
     p.act();
   };
   const ask = p.ask ? fill(p.ask, vars) : null;
-  const onSend = holdAt === null && pickDone && p.pending ? p.act : undefined;
+  const onSend = holdAt === null && p.pending ? p.act : undefined;
+  const target = holdAt === null ? p.pending?.target : undefined;
   const stream = (
     <>
       {s.startedAt && <p className="sc-date">{s.startedAt}</p>}
@@ -148,27 +115,13 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
           active={i === p.shown - 1 && p.playing}
           ids={ids}
           hold={i === holdAt}
-          acts={actsMark}
-          {...(s.agent === 'flow' ? { toolIco: 'logo/copilot/power-automate.svg' } : {})}
-          {...(s.agent === 'vscode' || s.agent === 'github' ? { toolView: (t: string, a: boolean) => <VsStep text={t} active={a} /> } : {})}
-          {...(i === firstUserIdx && pick ? { pick } : {})}
+          toolView={toolView}
         />
       )))}
-      {holdAt === null && p.approve && s.agent === 'vscode' && (
+      {holdAt === null && p.approve && (
         <VsConfirm key={p.shown} a={p.approve} denied={deniedAt === p.shown} onAllow={p.act} onDeny={() => setDeniedAt(p.shown)} onBack={() => setDeniedAt(null)} />
       )}
-      {holdAt === null && p.approve && s.agent !== 'vscode' && (
-        <Permission
-          key={p.shown}
-          a={p.approve}
-          denied={deniedAt === p.shown}
-          onAllow={p.act}
-          onDeny={() => setDeniedAt(p.shown)}
-          onBack={() => setDeniedAt(null)}
-          note={p.approve.warn ? <>⚠ {p.approve.warn}</> : undefined}
-        />
-      )}
-      {p.busy && (s.agent === 'vscode' || s.agent === 'github' ? <VsWorking /> : <Working plain={s.agent === 'flow'} />)}
+      {p.busy && <VsWorking />}
     </>
   );
 
@@ -183,7 +136,7 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
           <button type="button" className="sc-ghost" onClick={back} disabled={!canBack}><ArrowPreviousRegular aria-hidden="true" />이전으로</button>
           {isLast
             ? <button type="button" className="sc-ghost" onClick={() => { p.pause(); go(HASH_ATTRACT); }}><HomeRegular aria-hidden="true" />홈으로</button>
-            : <button type="button" className="sc-ghost" onClick={() => { setLit(null); p.pause(); setStepIdx(steps.length - 1); }}>건너뛰기<NextRegular aria-hidden="true" /></button>}
+            : <button type="button" className="sc-ghost" onClick={() => { p.pause(); setStepIdx(steps.length - 1); }}>건너뛰기<NextRegular aria-hidden="true" /></button>}
         </div>
         <div className="sc-title"><h1>{s.title}</h1></div>
       </header>
@@ -191,97 +144,44 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
         {steps.map((k, i) => (
           <li key={k} className={i === stepIdx ? 'on' : i < stepIdx ? 'past' : ''} {...(i === stepIdx ? { 'aria-current': 'step' as const } : {})}>
             {i < stepIdx
-              ? <button type="button" aria-label={`${LABEL[k]} 단계로 돌아가기`} onClick={() => { setLit(null); setStepIdx(i); }}>{LABEL[k]}</button>
+              ? <button type="button" aria-label={`${LABEL[k]} 단계로 돌아가기`} onClick={() => setStepIdx(i)}>{LABEL[k]}</button>
               : <span>{LABEL[k]}</span>}
           </li>
         ))}
       </ol>
 
       {step === 'pain' && (s.scene
-        ? <SceneStage scene={s.scene} onNext={next} cta={s.agent === 'teams' ? 'Teams에서 해보기' : undefined} />
+        ? <SceneStage scene={s.scene} onNext={next} />
         : <PainStage title={s.title} caption={s.before ?? s.summary} onNext={next} />)}
       {step === 'overview' && <OverviewStage product={productName(s)} steps={s.overview ?? []} hook={s.hook} onNext={next} />}
       {step === 'done' && <DoneStage s={s} st={st} vars={vars} completed={p.done} />}
 
-      {cowork && (
-        <div style={{ display: step === 'demo' ? 'contents' : 'none' }}>
-          <Cowork key={`${scenario}:${restarts}`} active={step === 'demo'} s={s} p={p} st={st} setSt={setSt} onDone={next} />
-        </div>
-      )}
-
-      {step === 'demo' && !cowork && (
+      {step === 'demo' && (
         <div className="sc-feed">
           <div className="desk-win is-app">
-            {s.agent === 'teams' ? (
-              <TeamsApp s={s} shown={p.shown} mark={mark} target={holdAt === null ? p.pending?.target : undefined} onAct={p.act} ask={ask} />
-            ) : s.agent === 'vscode' ? (
+            {s.agent === 'vscode' ? (
               <VsCodeWindow
                 s={s} st={st} ids={ids} mark={mark} streamRef={streamRef}
                 ask={ask} onSend={ask ? onSend : undefined}
-                target={holdAt === null ? p.pending?.target : undefined} onAct={p.act}
+                target={target} onAct={p.act}
               >
                 {stream}
               </VsCodeWindow>
-            ) : s.agent === 'github' ? (
-              <GitHubWeb
-                s={s} st={st} ids={ids} mark={mark} streamRef={streamRef}
-                target={holdAt === null ? p.pending?.target : undefined} onAct={p.act}
-              >
+            ) : (
+              <GitHubWeb s={s} st={st} ids={ids} mark={mark} streamRef={streamRef} target={target} onAct={p.act}>
                 {stream}
               </GitHubWeb>
-            ) : office ? (
-              <AppWindow
-                s={s} st={st} vars={vars} ids={ids} shown={p.shown} streamRef={streamRef} mark={mark}
-                ask={ask} onSend={ask ? onSend : undefined} pick={pick} pickPhase={pickPhase} onPickSelect={selectPick}
-                onSlide={n => setSt(x => ({ ...x, slide: n }))}
-                target={holdAt === null ? p.pending?.target : undefined} onAct={p.act}
-              >
-                {stream}
-              </AppWindow>
-            ) : (
-            <CpApp
-              mode="chat"
-              mark={mark}
-              side={(
-                <>
-                  <RailTabs active="chat" />
-                  <div id="chat-nav-group">
-                    <div className="nav">{CHAT_NAV.map(n => <NavItem key={n.id} icon={n.icon} name={n.name} active={n.id === 'new'} />)}</div>
-                    <History label="채팅" items={[s.title]} />
-                  </div>
-                </>
-              )}
-            >
-              <ChatMain
-                model={s.model}
-                streamRef={streamRef}
-                mark={mark}
-                composer={(
-                  <ChatComposer
-                    text={ask ?? 'Copilot에 메시지 보내기'}
-                    filled={!!ask}
-                    onSend={onSend}
-                    mark={mark}
-                    pick={pick}
-                    pickPhase={pickPhase}
-                    onPickSelect={selectPick}
-                  />
-                )}
-              >
-                {stream}
-              </ChatMain>
-            </CpApp>
             )}
             <TipLayer>
               {holdAt !== null && (
                 <Tip zone=".cwr-hold">
-                  <Bubble q={`${s.agent === 'office' ? productName(s) : AGENTS[s.agent].name}의 답변입니다.\n내용을 확인한 뒤 이어서 진행해 주세요.`}>
+                  <Bubble q={`${AGENTS[s.agent].name}의 답변입니다.\n내용을 확인한 뒤 이어서 진행해 주세요.`}>
                     <CueButton next onClick={() => { setHoldAt(null); p.play(); }}>이어서 보기</CueButton>
                   </Bubble>
                 </Tip>
               )}
               {holdAt === null && p.approve && (
-                <Tip zone=".wb-perm"><Bubble q={`실행하기 전에 사람에게 한 번 확인합니다.\n확인하고 이상이 없다면 ${s.agent === 'vscode' ? p.approve.go ?? '허용' : '승인'}을 눌러주세요.`} /></Tip>
+                <Tip zone=".wb-perm"><Bubble q={`실행하기 전에 사람에게 한 번 확인합니다.\n확인하고 이상이 없다면 ${p.approve.go ?? '허용'}을 눌러주세요.`} /></Tip>
               )}
               {holdAt === null && p.choice && (
                 <Tip>
@@ -290,17 +190,7 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
                   </Bubble>
                 </Tip>
               )}
-              {holdAt === null && p.spot && (
-                <SpotTip key={p.shown} spot={p.spot} lit={lit} onPick={setLit} onPass={() => { setLit(null); p.act(); }} />
-              )}
-              {holdAt === null && pick && pickPhase === 'search' && (
-                <Tip zone={['.wb-slash', '.zone-composer']}>
-                  <Bubble q="검색 목록이 열렸어요. 참고할 자료를 골라 붙여 볼까요?">
-                    <Hint>검색 목록에서 <b>{pick.name}</b> 를 눌러 붙여 보세요.</Hint>
-                  </Bubble>
-                </Tip>
-              )}
-              {holdAt === null && p.pending && pickDone && (
+              {holdAt === null && p.pending && (
                 <Tip zone={p.pending.target ? `[data-act="${p.pending.target}"]` : '.zone-composer'}>
                   <Bubble q={p.pending.text}>
                     {p.pending.target && KEY_TARGETS[p.pending.target] ? <Hint>키보드에서 <Key>{KEY_TARGETS[p.pending.target].label}</Key>을 누르거나 화면의 <b>{p.pending.action}</b>을 눌러 보세요.</Hint>
@@ -321,19 +211,5 @@ export function Play({ track, scenario }: { track: string; scenario: string }) {
       )}
       {rewind > 0 && <p className="sc-rewind" role="status">한 걸음 되돌렸습니다</p>}
     </main>
-  );
-}
-
-function SpotTip({ spot, lit, onPick, onPass }: {
-  spot: NonNullable<ReturnType<typeof useEngine>['spot']>; lit: string | null; onPick: (z: string) => void; onPass: () => void;
-}) {
-  const [picked, setPicked] = useState(false);
-  return (
-    <Tip zone={picked && lit ? `.zone-${lit}` : null} dim={picked}>
-      <Bubble kind="quiz" q={spot.text}>
-        <SpotOptions options={spot.options} answer={spot.answer} holdMs={SPOT_HOLD} onPass={onPass} onPick={z => { setPicked(true); onPick(z); }} />
-        {picked && <Solved>{spot.does}</Solved>}
-      </Bubble>
-    </Tip>
   );
 }

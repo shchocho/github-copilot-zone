@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { go, HASH_ATTRACT, useRoute } from './router';
 import { Attract } from './screens/Attract';
 import { Home } from './screens/Home';
-import { TrackList } from './screens/TrackList';
+import { ScenarioList } from './screens/ScenarioList';
 import { Play } from './play/Play';
-import { COPY } from './copy';
 
 const USABLE = '(min-width: 768px) and (min-height: 600px)';
 const IDLE_MS = 5 * 60 * 1000;
@@ -42,9 +41,8 @@ export function App() {
       {!usable && <Attract limited />}
       {usable && route.name === 'attract' && <Attract />}
       {usable && route.name === 'home' && <Home />}
-      {usable && route.name === 'scenarios' && <TrackList key={route.track} track={route.track} />}
+      {usable && route.name === 'scenarios' && <ScenarioList key={route.track} track={route.track} />}
       {usable && route.name === 'play' && <Play track={route.track} scenario={route.scenario} />}
-      {usable && (route.name === 'home' || route.name === 'scenarios') && <p className="booth-disclaimer">{COPY.disclaimer}</p>}
     </div>
   );
 }

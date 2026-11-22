@@ -1,5 +1,6 @@
 import { go, HASH_HOME } from '../router';
 import { COPY } from '../copy';
+import { Lockup } from './Lobby';
 
 /** 대기 화면 오른쪽의 편집기 미리보기 — 회색 제안이 떴다가 Tab 으로 받아들여지는 모습을 되풀이한다(실제 화면 모양, 장식 그림 아님) */
 const PREVIEW: { t: string; g?: boolean }[] = [
@@ -16,9 +17,9 @@ const PREVIEW: { t: string; g?: boolean }[] = [
 /** 대기(어트랙트) 화면 — 화면 아무 곳이나 누르면 홈으로 */
 export function Attract({ limited = false }: { limited?: boolean }) {
   return (
-    <main className={`ghcp-attract${limited ? ' is-limited' : ''}`} onClick={limited ? undefined : () => go(HASH_HOME)}>
+    <main className={`lobby ghcp-attract${limited ? ' is-limited' : ''}`} onClick={limited ? undefined : () => go(HASH_HOME)}>
       <div className="ghcp-attract-say">
-        <p className="ghcp-mark"><img src="logo/ghcp/copilot.svg" alt="" /><b>GitHub Copilot</b></p>
+        <Lockup />
         {limited ? (
           <>
             <h1>더 큰 화면에서<br />접속해 주세요</h1>
@@ -41,8 +42,8 @@ export function Attract({ limited = false }: { limited?: boolean }) {
                 <span>{i + 18}</span><code>{l.t}</code>
               </p>
             ))}
-            <span className="ghcp-preview-tab">수락 <kbd>Tab</kbd></span>
           </div>
+          <p className="ghcp-preview-note">회색 글자가 Copilot의 제안입니다. <kbd>Tab</kbd> 키로 받아들입니다.</p>
         </figure>
       )}
     </main>

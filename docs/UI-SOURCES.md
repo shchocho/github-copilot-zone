@@ -1,10 +1,10 @@
-# 화면 문구 · 모양의 근거 (2026-11-17~18 조사, 11-18 재확인)
+# 화면 문구 · 모양의 근거 (2026-11-17~18 조사, 11-18 · 11-22 재확인)
 
 체험 화면은 실제 제품 화면을 그대로 옮기는 것이 목표입니다. 문구를 지어내지 않고, 아래 근거에서 가져왔습니다.
 
 ## VS Code (한국어 UI)
 
-- 소스: `microsoft/vscode` main, 버전 1.148.0 (커밋 38ab687, 2026-11-17 → 11-18 커밋 3b381b1 로 다시 뽑아 labels.ts 의 Copilot 관련 문구가 모두 그대로인 것을 확인)
+- 소스: `microsoft/vscode` main, 버전 1.148.0 (커밋 38ab687, 2026-11-17 → 11-18 커밋 3b381b1 · 11-22 커밋 aeda485 로 다시 뽑아 labels.ts 의 Copilot 관련 문구가 모두 그대로인 것을 확인. 작업 집합의 Keep · Undo · N files changed 는 11-22 에도 번역 없음)
   - 다시 뽑을 때 `src/vs/workbench/contrib/mcp/**` 도 함께 받는다(MCP 도구 확인 문구)
   - `src/vs/workbench/contrib/chat/**`, `inlineChat/**`, `scm/**`, `terminalContrib/chatAgentTools/**`, `src/vs/editor/contrib/inlineCompletions/**`
 - 번역: `microsoft/vscode-loc` main — `vscode-language-pack-ko/translations/main.i18n.json`, `extensions/vscode.git.i18n.json`
@@ -36,6 +36,7 @@
 - 스마트 동작(커밋 메시지 등): https://code.visualstudio.com/docs/editing/copilot-smart-actions
 - 사용자 지정(instructions · agents · skills · MCP): https://code.visualstudio.com/docs/agent-customization/
 - 릴리스 노트 1.144(Universe)~1.146(2026-11-11): https://code.visualstudio.com/updates/v1_146 — 11-18 기준 최신 정식판은 1.146(Insiders 1.147). 1.146 노트에 Ask · Plan 에이전트 이름이나 채팅 단추 이름 변경은 없음
+- 1.147 정식판(2026-11-18): https://code.visualstudio.com/updates/v1_147 — 체험에서 누르는 단추 · 문구 변경 없음. 바뀐 것: Local 하네스 deprecated(2027-02 제거 예정, 체험은 Copilot 하네스만 보여 줘 영향 없음), 샌드박스 재시도 승인에 Allow for This Session / Workspace / User 드롭다운, Copilot 하네스 모델 선택에 실험용 모델 라우터, 첨부 pill 드래그 · 이미지 Mark Up. 1.148 은 아직 Insiders(11-22 기준)
 - 사용자 지정 문서 주소가 바뀜: /docs/agent-customization/ 개요는 404, 하위 문서는 그대로 — https://code.visualstudio.com/docs/agent-customization/mcp-servers , /custom-instructions (MCP 서버 추가: Chat: Open Customizations > MCP Servers > Add Server)
 
 ## GitHub.com (영어 UI — GitHub 웹은 한국어 화면이 없음)
@@ -48,6 +49,9 @@
   - https://github.blog/changelog/2026-11-17-copilot-code-review-adaptive-effort-secret-detection-and-more/
   - https://github.blog/changelog/2026-11-06-copilot-code-review-api-management-and-review-overview-updates/
   - https://github.blog/changelog/2026-11-17-mai-code-2-and-mai-code-2-flash-in-github-copilot/
+
+- 11-18~11-22 changelog 확인: Gemini 4 Neon 모델 정식(모델 목록만 해당), GitHub 인증 MCP 커넥터 8종 미리 보기, 팀 페이지 Customize Copilot 탭, PR Overview 미리 보기 개선(11-19, ✨ Try the Overview page 단추 — 미리 보기라 체험 PR 화면에는 넣지 않음). 클라우드 에이전트 · 코드 리뷰 · 세션 로그 단추 변경 없음
+  - https://github.blog/changelog/2026-11-19-improvements-on-the-pull-request-overview-in-public-preview
 
 ## 아직 확인하지 못한 것 (실제 화면을 보면 고칠 것)
 

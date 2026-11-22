@@ -5,7 +5,7 @@
  */
 import type { ReactNode, RefObject } from 'react';
 import type { Artifact, GhEvent, GhPage, PlayState, Scenario } from '../../types';
-import type { Mark } from '../../components/chrome';
+import type { Mark } from '../../components/stream';
 import { Bold, filterBy, passes } from '../../engine/text';
 
 const oi = (name: string) => <i className={`codicon codicon-${name}`} aria-hidden="true" />;
